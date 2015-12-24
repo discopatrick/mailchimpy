@@ -33,5 +33,23 @@ class MailChimpClientTest(TestCase):
 		self.assertIsNotNone(subscribed)
 		self.assertTrue(subscribed)
 
+	def test_subscribe_email_to_list_returns_true_on_success(self):
+
+		list_id = config.MAILCHIMP_LIST_ID
+		email = '{}@{}.com'.format(uuid4(), uuid4())
+
+		success = self.mc.subscribe_email_to_list(email, list_id)
+
+		self.assertTrue(success)
+
+	def test_subscribe_email_to_list_returns_false_for_email_already_subscribed(self):
+
+		list_id = config.MAILCHIMP_LIST_ID
+
+		success = self.mc.subscribe_email_to_list(config.EMAIL_ALREADY_SUBSCRIBED_TO_LIST, list_id)
+
+		self.assertIsNotNone(success)
+		self.assertFalse(success)
+
 if __name__ == '__main__':
 	unittest.main()

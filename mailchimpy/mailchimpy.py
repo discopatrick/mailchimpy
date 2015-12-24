@@ -44,3 +44,20 @@ class MailChimpClient(object):
 			subscribed = None
 
 		return subscribed, response
+
+	def subscribe_email_to_list(self, email, list_id):
+
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, list_id),
+			auth=('apikey', self.api_key),
+			json={'email_address': email, 'status': 'subscribed'}
+		)
+
+		if response.status_code == 200:
+			success = True
+		elif response.status_code == 400:
+			success = False
+		else:
+			success = None
+
+		return success

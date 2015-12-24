@@ -1,0 +1,1 @@
+from .mailchimpy import MailChimpClient

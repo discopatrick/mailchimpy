@@ -6,7 +6,10 @@ class MailChimpClientTest(TestCase):
 
 	def setUp(self):
 
-		self.mc = MailChimpClient()
+		with open('./api_key.txt') as f:
+			self.api_key = f.read().strip()
+			
+		self.mc = MailChimpClient(self.api_key)
 
 	def test_api_returns_a_response(self):
 

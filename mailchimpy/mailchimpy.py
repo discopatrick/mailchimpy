@@ -3,10 +3,9 @@ import requests
 
 class MailChimpClient(object):
 
-	def __init__(self):
+	def __init__(self, api_key):
 
-		with open('./api_key.txt') as f:
-			self.api_key = f.read().strip()
+		self.api_key = api_key
 
 		# the subdomain to use in the api url
 		# is always the last 3 characters of the api key

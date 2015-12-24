@@ -1,5 +1,6 @@
 import os
 import requests
+import hashlib
 
 class MailChimpClient(object):
 
@@ -11,10 +12,27 @@ class MailChimpClient(object):
 		# is always the last 3 characters of the api key
 		self.subdomain = self.api_key[-3:]
 
+	def get_md5(self, string):
+
+		hashobject = hashlib.md5(string.encode())
+		md5 = hashobject.hexdigest()
+		return md5
+
 	def get_api_root(self):
 
 		response = requests.get(
 			'https://{}.api.mailchimp.com/3.0/'.format(self.subdomain),
+			auth=('apikey', self.api_key)
+		)
+
+		return response
+
+	def check_subscription_status(self, email, list_id):
+
+		email_md5 = self.get_md5(email)
+
+		response = requests.get(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/{}'.format(self.subdomain, list_id, email),
 			auth=('apikey', self.api_key)
 		)
 

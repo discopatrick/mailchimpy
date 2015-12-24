@@ -9,8 +9,7 @@ class MailChimpClientTest(TestCase):
 
 	def setUp(self):
 
-		with open('./api_key.txt') as f:
-			self.api_key = f.read().strip()
+		self.api_key = config.MAILCHIMP_API_KEY
 
 		self.mc = MailChimpClient(self.api_key)
 
@@ -22,8 +21,7 @@ class MailChimpClientTest(TestCase):
 
 	def test_can_check_if_email_address_is_subscribed_to_list(self):
 
-		with open('./list_id.txt') as f:
-			list_id = f.read().strip()
+		list_id = config.MAILCHIMP_LIST_ID
 
 		email = '{}@example.com'.format(uuid4())
 
@@ -33,8 +31,7 @@ class MailChimpClientTest(TestCase):
 
 	def test_check_subscription_status_returns_false_for_email_address_not_subscribed_to_list(self):
 
-		with open('./list_id.txt') as f:
-			list_id = f.read().strip()
+		list_id = config.MAILCHIMP_LIST_ID
 
 		email = '{}@example.com'.format(uuid4())
 
@@ -45,8 +42,7 @@ class MailChimpClientTest(TestCase):
 
 	def test_check_subscription_status_returns_true_for_email_address_already_subscribed_to_list(self):
 
-		with open('./list_id.txt') as f:
-			list_id = f.read().strip()
+		list_id = config.MAILCHIMP_LIST_ID
 
 		subscribed, response = self.mc.check_subscription_status(config.EMAIL_ALREADY_SUBSCRIBED_TO_LIST, list_id)
 

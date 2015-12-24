@@ -32,8 +32,15 @@ class MailChimpClient(object):
 		email_md5 = self.get_md5(email)
 
 		response = requests.get(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/{}'.format(self.subdomain, list_id, email),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, list_id, email_md5),
 			auth=('apikey', self.api_key)
 		)
 
-		return response
+		if response.status_code == 404:
+			subscribed = False
+		elif response.status_code == 200:
+			subscribed = True
+		else:
+			subscribed = None
+
+		return subscribed, response

@@ -5,19 +5,14 @@ import requests
 from uuid import uuid4
 from pprint import pformat
 
+from .basemailchimptest import BaseMailChimpTest
 from . import config
 
-class MailChimpAPITest(TestCase):
+class MailChimpAPITest(BaseMailChimpTest):
 	
-	def setUp(self):
+	# def setUp(self):
 
-		self.api_key = config.MAILCHIMP_API_KEY
-
-		# the subdomain to use in the api url
-		# is always the last 3 characters of the api key
-		self.subdomain = self.api_key[-3:]
-
-		self.list_id = config.MAILCHIMP_LIST_ID
+	# 	super().setUp()
 
 	def get_md5(self, string):
 

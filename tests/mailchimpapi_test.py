@@ -31,7 +31,7 @@ class MailChimpAPITest(BaseMailChimpTest):
 
 	def test_can_check_if_email_address_is_subscribed_to_list(self):
 
-		email = '{}@example.com'.format(uuid4())
+		email = self._get_fresh_email()
 		email_md5 = self.get_md5(email)
 
 		response = requests.get(
@@ -43,9 +43,7 @@ class MailChimpAPITest(BaseMailChimpTest):
 
 	def test_can_subscribe_a_new_email_to_list(self):
 
-		# can't use 'example.com' here, MailChimp will refuse an
-		# address with that domain.
-		email = '{}@{}.com'.format(uuid4(), uuid4())
+		email = self._get_fresh_email()
 
 		response = requests.post(
 			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
@@ -84,12 +82,8 @@ class MailChimpAPITest(BaseMailChimpTest):
 
 		# subscribe an email address to the list
 
-		email = '{}@{}.com'.format(uuid4(), uuid4())
-		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
-			auth=('apikey', self.api_key),
-			json={'email_address': email, 'status': 'subscribed'}
-		)
+		email = self._get_fresh_email()
+		self._api_subscribe_email_to_list(email, self.list_id)
 
 		# unsubscribe that same email address from the list
 		
@@ -107,12 +101,8 @@ class MailChimpAPITest(BaseMailChimpTest):
 
 		# subscribe an email address to the list
 
-		email = '{}@{}.com'.format(uuid4(), uuid4())
-		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
-			auth=('apikey', self.api_key),
-			json={'email_address': email, 'status': 'subscribed'}
-		)
+		email = self._get_fresh_email()
+		self._api_subscribe_email_to_list(email, self.list_id)
 
 		# unsubscribe that same email address from the list
 		
@@ -136,7 +126,7 @@ class MailChimpAPITest(BaseMailChimpTest):
 
 	def test_unsubscribing_an_email_that_has_never_existed_in_the_list(self):
 
-		email = '{}@{}.com'.format(uuid4(), uuid4())
+		email = self._get_fresh_email()
 		email_md5 = self.get_md5(email)
 		response = requests.patch(
 			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),

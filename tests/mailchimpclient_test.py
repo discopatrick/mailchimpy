@@ -1,6 +1,8 @@
 import unittest
 from unittest import TestCase
 from uuid import uuid4
+import requests
+import hashlib
 
 from mailchimpy.mailchimpy import MailChimpClient
 from . import config
@@ -12,7 +14,17 @@ class MailChimpClientTest(TestCase):
 		self.api_key = config.MAILCHIMP_API_KEY
 		self.list_id = config.MAILCHIMP_LIST_ID
 
+		# the subdomain to use in the api url
+		# is always the last 3 characters of the api key
+		self.subdomain = self.api_key[-3:]
+
 		self.mc = MailChimpClient(self.api_key)
+
+	def get_md5(self, string):
+
+		hashobject = hashlib.md5(string.encode())
+		md5 = hashobject.hexdigest()
+		return md5
 
 	def get_fresh_email(self):
 
@@ -46,6 +58,52 @@ class MailChimpClientTest(TestCase):
 
 		self.assertIsNotNone(success)
 		self.assertFalse(success)
+
+	def test_unsubscribe_email_from_list_returns_true_on_success(self):
+
+		# subscribe an email address to the list (via HTTP)
+		email = self.get_fresh_email()
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
+			auth=('apikey', self.api_key),
+			json={'email_address': email, 'status': 'subscribed'}
+		)
+
+		# unsubscribe that email address (via the client)
+		success = self.mc.unsubscribe_email_from_list(email, self.list_id)
+
+		self.assertTrue(success)
+
+	def test_unsubscribe_email_from_list_returns_true_even_when_it_was_already_unsubscribed(self):
+
+		# subscribe an email address to the list (via HTTP)
+		email = self.get_fresh_email()
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
+			auth=('apikey', self.api_key),
+			json={'email_address': email, 'status': 'subscribed'}
+		)
+
+		# unsubscribe that email address (also via HTTP)
+		email_md5 = self.get_md5(email)
+		response = requests.patch(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
+			auth=('apikey', self.api_key),
+			json={'status': 'unsubscribed'}
+		)
+
+		# attempt to unsubscribe again (via the client)
+		success = self.mc.unsubscribe_email_from_list(email, self.list_id)
+
+		self.assertTrue(success)		
+
+	def test_unsubscribe_email_from_list_returns_none_when_email_did_not_exist_on_list(self):
+
+		email = self.get_fresh_email()
+
+		success = self.mc.unsubscribe_email_from_list(email, self.list_id)
+
+		self.assertIsNone(success)
 
 if __name__ == '__main__':
 	unittest.main()

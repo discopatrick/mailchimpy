@@ -61,3 +61,21 @@ class MailChimpClient(object):
 			success = None
 
 		return success
+
+	def unsubscribe_email_from_list(self, email, list_id):
+
+		email_md5 = self.get_md5(email)
+		response = requests.patch(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, list_id, email_md5),
+			auth=('apikey', self.api_key),
+			json={'status': 'unsubscribed'}
+		)
+
+		if response.status_code == 200:
+			success = True
+		elif response.status_code == 404:
+			success = None
+		else:
+			success = False
+
+		return success

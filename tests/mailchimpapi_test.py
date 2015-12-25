@@ -82,10 +82,78 @@ class MailChimpAPITest(TestCase):
 			json={'email_address': known_disallowed_email, 'status': 'subscribed'}
 		)
 
-		# print(pformat(response.json()))
-
 		self.assertEqual(response.status_code, 400)
 		self.assertEqual(response.json().get('title'), 'Invalid Resource')
+
+	def test_unsubscribing_an_email(self):
+
+		# subscribe an email address to the list
+
+		email = '{}@{}.com'.format(uuid4(), uuid4())
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
+			auth=('apikey', self.api_key),
+			json={'email_address': email, 'status': 'subscribed'}
+		)
+
+		# unsubscribe that same email address from the list
+		
+		email_md5 = self.get_md5(email)
+		response = requests.patch(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
+			auth=('apikey', self.api_key),
+			json={'status': 'unsubscribed'}
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json().get('status'), 'unsubscribed')
+
+	def test_unsubscribing_an_email_that_is_already_unsubscribed(self):
+
+		# subscribe an email address to the list
+
+		email = '{}@{}.com'.format(uuid4(), uuid4())
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
+			auth=('apikey', self.api_key),
+			json={'email_address': email, 'status': 'subscribed'}
+		)
+
+		# unsubscribe that same email address from the list
+		
+		email_md5 = self.get_md5(email)
+		response = requests.patch(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
+			auth=('apikey', self.api_key),
+			json={'status': 'unsubscribed'}
+		)
+
+		# attempt to unsubscrbe again
+		
+		response = requests.patch(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
+			auth=('apikey', self.api_key),
+			json={'status': 'unsubscribed'}
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json().get('status'), 'unsubscribed')
+
+	def test_unsubscribing_an_email_that_has_never_existed_in_the_list(self):
+
+		email = '{}@{}.com'.format(uuid4(), uuid4())
+		email_md5 = self.get_md5(email)
+		response = requests.patch(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
+			auth=('apikey', self.api_key),
+			json={'status': 'unsubscribed'}
+		)
+
+		# print(response.status_code)
+		# print(pformat(response.json()))
+
+		self.assertEqual(response.status_code, 404)
+		self.assertEqual(response.json().get('title'), 'Resource Not Found')
 
 if __name__ == '__main__':
 	unittest.main()

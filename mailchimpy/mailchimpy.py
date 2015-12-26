@@ -46,7 +46,7 @@ class MailChimpClient(object):
 		else:
 			subscribed = None
 
-		return subscribed, response
+		return subscribed
 
 	def subscribe_email_to_list(self, email, list_id):
 

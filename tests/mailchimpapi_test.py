@@ -141,4 +141,4 @@ class MailChimpAPITest(BaseMailChimpTest):
 		self.assertEqual(response.json().get('title'), 'Resource Not Found')
 
 if __name__ == '__main__':
-	unittest.main()
+	unittest.main(warnings='ignore') # suppress this warning: ResourceWarning: unclosed <ssl.SSLSocket

@@ -45,10 +45,13 @@ class BaseMailChimpTest(TestCase):
 		# certain is not already subscribed to our list(s)
 		return '{}@{}.com'.format(uuid4(), uuid4())
 
-	def _api_subscribe_email_to_list(self, email, list_id):
+	def _api_subscribe_email_to_list(self, email, list_id, requests_session=None):
+
+		if not requests_session:
+			requests_session = requests.Session()
 
 		# subscribe an email address to the list (via direct API call)
-		response = requests.post(
+		response = requests_session.post(
 			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, list_id),
 			auth=('apikey', self.api_key),
 			json={'email_address': email, 'status': 'subscribed'}

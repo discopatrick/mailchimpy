@@ -9,8 +9,11 @@ from .basemailchimptest import BaseMailChimpTest
 from mailchimpy.mailchimpy import MailChimpClient
 from . import config
 
-# TODO: suppress this warning: ResourceWarning: unclosed <ssl.SSLSocket
-# http://stackoverflow.com/questions/26563711/disabling-python-3-2-resourcewarning
+def ignore_warnings(test_func):
+    def do_test(self, *args, **kwargs):
+        with warnings.catch_warnings():
+            test_func(self, *args, **kwargs)
+    return do_test
 
 class MailChimpClientTest(BaseMailChimpTest):
 
@@ -29,31 +32,33 @@ class MailChimpClientTest(BaseMailChimpTest):
 
 	def test_check_subscription_status_returns_false_for_email_address_not_subscribed_to_list(self):
 
-		with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
-			subscribed, response = self.mc.check_subscription_status(self._get_fresh_email(), self.list_id)
+		email = self._get_fresh_email()
+
+		# with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
+		subscribed, response = self.mc.check_subscription_status(email, self.list_id)
 
 		self.assertIsNotNone(subscribed)
 		self.assertFalse(subscribed)
 
 	def test_check_subscription_status_returns_true_for_email_address_already_subscribed_to_list(self):
 
-		with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
-			subscribed, response = self.mc.check_subscription_status(config.EMAIL_ALREADY_SUBSCRIBED_TO_LIST, self.list_id)
+		# with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
+		subscribed, response = self.mc.check_subscription_status(config.EMAIL_ALREADY_SUBSCRIBED_TO_LIST, self.list_id)
 
 		self.assertIsNotNone(subscribed)
 		self.assertTrue(subscribed)
 
 	def test_subscribe_email_to_list_returns_true_on_success(self):
 
-		with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
-			success = self.mc.subscribe_email_to_list(self._get_fresh_email(), self.list_id)
+		# with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
+		success = self.mc.subscribe_email_to_list(self._get_fresh_email(), self.list_id)
 
 		self.assertTrue(success)
 
 	def test_subscribe_email_to_list_returns_false_for_email_already_subscribed(self):
 
-		with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
-			success = self.mc.subscribe_email_to_list(config.EMAIL_ALREADY_SUBSCRIBED_TO_LIST, self.list_id)
+		# with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
+		success = self.mc.subscribe_email_to_list(config.EMAIL_ALREADY_SUBSCRIBED_TO_LIST, self.list_id)
 
 		self.assertIsNotNone(success)
 		self.assertFalse(success)
@@ -61,15 +66,12 @@ class MailChimpClientTest(BaseMailChimpTest):
 	def test_unsubscribe_email_from_list_returns_true_on_success(self):
 
 		# subscribe an email address to the list (via API directly)
-		# could we pass self.mc.session to this method so that the requests within
-		# are also recorded to self.recorder?
-		email = self._get_fresh_email() 
-
-		self._api_subscribe_email_to_list(email, self.list_id)
+		email = self._get_fresh_email()
+		self._api_subscribe_email_to_list(email, self.list_id, self.mc.session)		
 
 		# unsubscribe that email address (via the client)
-		with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
-			success = self.mc.unsubscribe_email_from_list(email, self.list_id)
+		# with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
+		success = self.mc.unsubscribe_email_from_list(email, self.list_id)
 
 		self.assertTrue(success)
 
@@ -77,7 +79,7 @@ class MailChimpClientTest(BaseMailChimpTest):
 
 		# subscribe an email address to the list (via API directly)
 		email = self._get_fresh_email()
-		self._api_subscribe_email_to_list(email, self.list_id)
+		self._api_subscribe_email_to_list(email, self.list_id, self.mc.session)
 
 		# unsubscribe that email address (also via HTTP)
 		email_md5 = self.get_md5(email)
@@ -88,8 +90,8 @@ class MailChimpClientTest(BaseMailChimpTest):
 		)
 
 		# attempt to unsubscribe again (via the client)
-		with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
-			success = self.mc.unsubscribe_email_from_list(email, self.list_id)
+		# with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
+		success = self.mc.unsubscribe_email_from_list(email, self.list_id)
 
 		self.assertTrue(success)		
 
@@ -97,10 +99,10 @@ class MailChimpClientTest(BaseMailChimpTest):
 
 		email = self._get_fresh_email()
 
-		with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
-			success = self.mc.unsubscribe_email_from_list(email, self.list_id)
+		# with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
+		success = self.mc.unsubscribe_email_from_list(email, self.list_id)
 
 		self.assertIsNone(success)
 
 if __name__ == '__main__':
-	unittest.main()
+	unittest.main(warnings='ignore') # suppress this warning: ResourceWarning: unclosed <ssl.SSLSocket

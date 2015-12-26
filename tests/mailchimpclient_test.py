@@ -81,7 +81,7 @@ class MailChimpClientTest(BaseMailChimpTest):
 		email = self._get_fresh_email()
 		self._api_subscribe_email_to_list(email, self.list_id, self.mc.session)
 
-		# unsubscribe that email address (also via HTTP)
+		# unsubscribe that email address (also via API directly)
 		email_md5 = self.get_md5(email)
 		response = requests.patch(
 			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
@@ -89,7 +89,7 @@ class MailChimpClientTest(BaseMailChimpTest):
 			json={'status': 'unsubscribed'}
 		)
 
-		# attempt to unsubscribe again (via the client)
+		# attempt to unsubscribe a second time (via the client)
 		# with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
 		success = self.mc.unsubscribe_email_from_list(email, self.list_id)
 

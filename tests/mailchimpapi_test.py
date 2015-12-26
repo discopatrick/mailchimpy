@@ -56,10 +56,17 @@ class MailChimpAPITest(BaseMailChimpTest):
 
 	def test_subscribing_an_email_that_is_already_subscribed(self):
 
+		# subscribe an email address to the list
+
+		email = self._get_fresh_email()
+		self._api_subscribe_email_to_list(email, self.list_id)
+
+		# attempt to subscribe that same email address again
+
 		response = requests.post(
 			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
 			auth=('apikey', self.api_key),
-			json={'email_address': config.EMAIL_ALREADY_SUBSCRIBED_TO_LIST, 'status': 'subscribed'}
+			json={'email_address': email, 'status': 'subscribed'}
 		)
 
 		self.assertEqual(response.status_code, 400)

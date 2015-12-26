@@ -18,12 +18,17 @@ A python 3 client for the MailChimp API v3.
 
 ## Tests
 
+Currently the tests are calling the API directly, rather than using mock objects, and are therefore not true unit tests. Eventually the test suite will use [betamax](https://github.com/sigmavirus24/betamax) to record http interactions and play them back.
+
+Some of the tests rely on an email address already being subscribed to the list. Because of this, some tests need to make an extra API call to create this subscription before performing the test itself. Wherever this occurs, the 'arrange' step of the test will make API calls via Python's **requests** module, while the 'act' step of the test will use our **mailchimpy** client. This is to ensure (as much as is possible) that we are only testing one thing at a time.
+
+To run the tests:
+
 * Clone this repo.
 * `pip install -r requirements.txt`
-* Create a file inside tests/ called `config.py` containing these values (see `config-example.py` for an example):
+* Create a file inside `tests/` called `config.py` containing these values (see `config-example.py` for an example):
 	* MAILCHIMP_API_KEY (your MailChimp acccount API key)
 	* MAILCHIMP_LIST_ID (the id of a list you have created for test purposes - do not use a real list!)
-	* EMAIL_ALREADY_SUBSCRIBED_TO_LIST (an email address that you know is already subscribed to your list)
 * Run one of the test classes below.
 
 There are two test classes:

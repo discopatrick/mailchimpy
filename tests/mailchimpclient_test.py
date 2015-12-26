@@ -42,8 +42,13 @@ class MailChimpClientTest(BaseMailChimpTest):
 
 	def test_check_subscription_status_returns_true_for_email_address_already_subscribed_to_list(self):
 
+		# subscribe an email address to the list (via API directly)
+		email = self._get_fresh_email()
+		self._api_subscribe_email_to_list(email, self.list_id, self.mc.session)
+
+		# check that email's subscription status (via the client)
 		# with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
-		subscribed = self.mc.check_subscription_status(config.EMAIL_ALREADY_SUBSCRIBED_TO_LIST, self.list_id)
+		subscribed = self.mc.check_subscription_status(email, self.list_id)
 
 		self.assertIsNotNone(subscribed)
 		self.assertTrue(subscribed)
@@ -57,8 +62,13 @@ class MailChimpClientTest(BaseMailChimpTest):
 
 	def test_subscribe_email_to_list_returns_false_for_email_already_subscribed(self):
 
+		# subscribe an email address to the list (via API directly)
+		email = self._get_fresh_email()
+		self._api_subscribe_email_to_list(email, self.list_id, self.mc.session)
+
+		# attempt to subscribe that same email a second time (via the client)
 		# with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
-		success = self.mc.subscribe_email_to_list(config.EMAIL_ALREADY_SUBSCRIBED_TO_LIST, self.list_id)
+		success = self.mc.subscribe_email_to_list(email, self.list_id)
 
 		self.assertIsNotNone(success)
 		self.assertFalse(success)

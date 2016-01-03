@@ -28,16 +28,17 @@ class BaseMailChimpTest(TestCase):
 		MAILCHIMP_REQUEST_AUTH_HEADER = '{}:{}'.format(MAILCHIMP_REQUEST_AUTH_HEADER_NAME, self.api_key)
 
 		# create the directory to store betamax cassettes
-		# if self.cassette_dir is None:
-		# 	self.cassette_dir = 'cassettes'
 		abs_cassette_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.cassette_dir)
 		os.makedirs(abs_cassette_dir, exist_ok=True)
 
 		Betamax.register_serializer(pretty_json.PrettyJSONSerializer)	
 		with Betamax.configure() as betamaxconfig:
 			betamaxconfig.cassette_library_dir = abs_cassette_dir
-			betamaxconfig.default_cassette_options['record_mode'] = 'new_episodes'
+			betamaxconfig.default_cassette_options['record_mode'] = 'once'
 			betamaxconfig.default_cassette_options['serialize_with'] = 'prettyjson'
+			betamaxconfig.default_cassette_options['match_requests_on'] = [
+				'method'
+			]
 			betamaxconfig.define_cassette_placeholder(
 				'<MAILCHIMP_AUTH_B64>',
 				base64.b64encode(

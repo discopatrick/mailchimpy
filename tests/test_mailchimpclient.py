@@ -12,13 +12,6 @@ from . import config
 
 class MailChimpClientTest(BaseMailChimpClientTest):
 
-	def setUp(self):
-
-		super().setUp()
-
-		self.mc = MailChimpClient(self.api_key)
-		self.recorder = Betamax(self.mc.session)
-
 	def get_md5(self, string):
 
 		hashobject = hashlib.md5(string.encode())
@@ -90,7 +83,7 @@ class MailChimpClientTest(BaseMailChimpClientTest):
 	def test_unsubscribe_email_from_list_returns_true_even_when_it_was_already_unsubscribed(self):
 
 		email = self._get_fresh_email()
-		
+
 		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
 			# subscribe an email address to the list (via API directly)
 			self._api_subscribe_email_to_list(email, self.list_id, self.mc.session)

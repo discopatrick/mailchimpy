@@ -7,6 +7,7 @@ from betamax import Betamax
 from betamax_serializers import pretty_json
 import base64
 
+from mailchimpy.mailchimpy import MailChimpClient
 from . import config
 
 class BaseMailChimpTest(TestCase):
@@ -15,6 +16,9 @@ class BaseMailChimpTest(TestCase):
 
 	@classmethod
 	def setUpClass(self):
+
+		self.session = requests.Session()
+		self.recorder = Betamax(self.session)
 
 		self.api_key = config.MAILCHIMP_API_KEY
 		self.list_id = config.MAILCHIMP_LIST_ID
@@ -127,3 +131,18 @@ class BaseMailChimpAPITest(BaseMailChimpTest):
 class BaseMailChimpClientTest(BaseMailChimpTest):
 
 	cassette_dir = 'cassettes/client'
+
+	@classmethod
+	def setUpClass(cls):
+
+		super(BaseMailChimpClientTest, cls).setUpClass()
+
+		cls.mc = MailChimpClient(cls.api_key)
+
+		# override the default requests session, using instead the 
+		# MailChimpClient's session
+		cls.session = cls.mc.session
+
+		# not sure if this is necessary, may be taken care of by
+		# passed-by-ref variables
+		cls.recorder = Betamax(cls.session)

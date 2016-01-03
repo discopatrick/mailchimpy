@@ -8,7 +8,7 @@ from pprint import pformat
 from .basemailchimptest import BaseMailChimpTest, BaseMailChimpAPITest
 from . import config
 
-class ListsTest(BaseMailChimpAPITest):
+class ListsAPITest(BaseMailChimpAPITest):
 
 	def test_getting_all_lists(self):
 
@@ -76,11 +76,7 @@ class ListsTest(BaseMailChimpAPITest):
 		# print(response.status_code)
 		# print(pformat(response.json()))
 
-class MailChimpAPITest(BaseMailChimpTest):
-	
-	# def setUp(self):
-
-	# 	super().setUp()
+class MembersAPITest(BaseMailChimpAPITest):
 
 	def get_md5(self, string):
 
@@ -90,10 +86,11 @@ class MailChimpAPITest(BaseMailChimpTest):
 
 	def test_api_returns_a_response(self):
 
-		response = requests.get(
-			'https://{}.api.mailchimp.com/3.0/'.format(self.subdomain),
-			auth=('apikey', self.api_key)
-		)
+		with self.recorder.use_cassette(self.id()):
+			response = self.session.get(
+				'https://{}.api.mailchimp.com/3.0/'.format(self.subdomain),
+				auth=('apikey', self.api_key)
+			)
 
 		self.assertEqual(response.status_code, 200)
 
@@ -102,10 +99,11 @@ class MailChimpAPITest(BaseMailChimpTest):
 		email = self._get_fresh_email()
 		email_md5 = self.get_md5(email)
 
-		response = requests.get(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
-			auth=('apikey', self.api_key)
-		)
+		with self.recorder.use_cassette(self.id()):
+			response = self.session.get(
+				'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
+				auth=('apikey', self.api_key)
+			)
 
 		self.assertEqual(response.status_code, 404)
 
@@ -113,29 +111,31 @@ class MailChimpAPITest(BaseMailChimpTest):
 
 		email = self._get_fresh_email()
 
-		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
-			auth=('apikey', self.api_key),
-			json={'email_address': email, 'status': 'subscribed'}
-		)
+		with self.recorder.use_cassette(self.id()):
+			response = self.session.post(
+				'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
+				auth=('apikey', self.api_key),
+				json={'email_address': email, 'status': 'subscribed'}
+			)
 
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(response.json().get('status'), 'subscribed')
 
 	def test_subscribing_an_email_that_is_already_subscribed(self):
 
-		# subscribe an email address to the list
-
 		email = self._get_fresh_email()
-		self._api_subscribe_email_to_list(email, self.list_id)
+
+		# subscribe an email address to the list
+		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+			self._api_subscribe_email_to_list(email, self.list_id)
 
 		# attempt to subscribe that same email address again
-
-		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
-			auth=('apikey', self.api_key),
-			json={'email_address': email, 'status': 'subscribed'}
-		)
+		with self.recorder.use_cassette(self.id()):
+			response = self.session.post(
+				'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
+				auth=('apikey', self.api_key),
+				json={'email_address': email, 'status': 'subscribed'}
+			)
 
 		self.assertEqual(response.status_code, 400)
 		self.assertEqual(response.json().get('title'), 'Member Exists')
@@ -144,57 +144,60 @@ class MailChimpAPITest(BaseMailChimpTest):
 
 		known_disallowed_email = 'anything@example.com'
 
-		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
-			auth=('apikey', self.api_key),
-			json={'email_address': known_disallowed_email, 'status': 'subscribed'}
-		)
+		with self.recorder.use_cassette(self.id()):
+			response = self.session.post(
+				'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
+				auth=('apikey', self.api_key),
+				json={'email_address': known_disallowed_email, 'status': 'subscribed'}
+			)
 
 		self.assertEqual(response.status_code, 400)
 		self.assertEqual(response.json().get('title'), 'Invalid Resource')
 
 	def test_unsubscribing_an_email(self):
 
-		# subscribe an email address to the list
-
 		email = self._get_fresh_email()
-		self._api_subscribe_email_to_list(email, self.list_id)
 
-		# unsubscribe that same email address from the list
+		# subscribe an email address to the list
+		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+			self._api_subscribe_email_to_list(email, self.list_id)
 		
 		email_md5 = self.get_md5(email)
-		response = requests.patch(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
-			auth=('apikey', self.api_key),
-			json={'status': 'unsubscribed'}
-		)
+
+		# unsubscribe that same email address from the list
+		with self.recorder.use_cassette(self.id()):
+			response = self.session.patch(
+				'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
+				auth=('apikey', self.api_key),
+				json={'status': 'unsubscribed'}
+			)
 
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(response.json().get('status'), 'unsubscribed')
 
 	def test_unsubscribing_an_email_that_is_already_unsubscribed(self):
 
-		# subscribe an email address to the list
-
 		email = self._get_fresh_email()
-		self._api_subscribe_email_to_list(email, self.list_id)
+	
+		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+			# subscribe an email address to the list
+			self._api_subscribe_email_to_list(email, self.list_id)
 
-		# unsubscribe that same email address from the list
-		
-		email_md5 = self.get_md5(email)
-		response = requests.patch(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
-			auth=('apikey', self.api_key),
-			json={'status': 'unsubscribed'}
-		)
+			# unsubscribe that same email address from the list		
+			email_md5 = self.get_md5(email)
+			response = self.session.patch(
+				'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
+				auth=('apikey', self.api_key),
+				json={'status': 'unsubscribed'}
+			)
 
-		# attempt to unsubscrbe again
-		
-		response = requests.patch(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
-			auth=('apikey', self.api_key),
-			json={'status': 'unsubscribed'}
-		)
+		# attempt to unsubscribe again	
+		with self.recorder.use_cassette(self.id()):
+			response = self.session.patch(
+				'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
+				auth=('apikey', self.api_key),
+				json={'status': 'unsubscribed'}
+			)
 
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(response.json().get('status'), 'unsubscribed')
@@ -203,16 +206,18 @@ class MailChimpAPITest(BaseMailChimpTest):
 
 		email = self._get_fresh_email()
 		email_md5 = self.get_md5(email)
-		response = requests.patch(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
-			auth=('apikey', self.api_key),
-			json={'status': 'unsubscribed'}
-		)
+
+		with self.recorder.use_cassette(self.id()):
+			response = self.session.patch(
+				'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
+				auth=('apikey', self.api_key),
+				json={'status': 'unsubscribed'}
+			)
 
 		self.assertEqual(response.status_code, 404)
 		self.assertEqual(response.json().get('title'), 'Resource Not Found')
 
-class InterestCategoriesTest(BaseMailChimpTest):
+class InterestCategoriesAPITest(BaseMailChimpTest):
 
 	def test_get_all_interest_categories_of_list(self):
 
@@ -278,7 +283,7 @@ class InterestCategoriesTest(BaseMailChimpTest):
 		self.assertEqual(response.json().get('title'), category_name)
 
 
-class InterestsTest(BaseMailChimpTest):
+class InterestsAPITest(BaseMailChimpTest):
 	"""
 	Testing interests is currently done against an isolated list
 	for each test, as each list has a maximum of 60 interests across all

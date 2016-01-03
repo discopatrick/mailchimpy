@@ -35,7 +35,7 @@ class MailChimpClientTest(BaseMailChimpClientTest):
 
 		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
 			# subscribe an email address to the list (via API directly)
-			self._api_subscribe_email_to_list(email, self.list_id, self.mc.session)
+			self._api_subscribe_email_to_list(email, self.list_id)
 
 		with self.recorder.use_cassette(self.id()):
 			# check that email's subscription status (via the client)
@@ -57,7 +57,7 @@ class MailChimpClientTest(BaseMailChimpClientTest):
 
 		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
 			# subscribe an email address to the list (via API directly)
-			self._api_subscribe_email_to_list(email, self.list_id, self.mc.session)
+			self._api_subscribe_email_to_list(email, self.list_id)
 
 		with self.recorder.use_cassette(self.id()):
 			# attempt to subscribe that same email a second time (via the client)
@@ -72,7 +72,7 @@ class MailChimpClientTest(BaseMailChimpClientTest):
 
 		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
 			# subscribe an email address to the list (via API directly)
-			self._api_subscribe_email_to_list(email, self.list_id, self.mc.session)		
+			self._api_subscribe_email_to_list(email, self.list_id)		
 
 		# unsubscribe that email address (via the client)
 		with self.recorder.use_cassette(self.id()):
@@ -86,7 +86,7 @@ class MailChimpClientTest(BaseMailChimpClientTest):
 
 		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
 			# subscribe an email address to the list (via API directly)
-			self._api_subscribe_email_to_list(email, self.list_id, self.mc.session)
+			self._api_subscribe_email_to_list(email, self.list_id)
 
 			# unsubscribe that email address (also via API directly)
 			email_md5 = self.get_md5(email)

@@ -39,6 +39,9 @@ class BaseMailChimpTest(TestCase):
 
 		Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
 
+	def _get_guid(self):
+		return str(uuid4())
+
 	def _get_fresh_email(self):
 
 		# generate a random email address, which we can be almost

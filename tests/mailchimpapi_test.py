@@ -141,11 +141,227 @@ class MailChimpAPITest(BaseMailChimpTest):
 			json={'status': 'unsubscribed'}
 		)
 
-		# print(response.status_code)
-		# print(pformat(response.json()))
-
 		self.assertEqual(response.status_code, 404)
 		self.assertEqual(response.json().get('title'), 'Resource Not Found')
 
+class InterestCategoriesTest(BaseMailChimpTest):
+
+	def test_get_all_interest_categories_of_list(self):
+
+		response = requests.get(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+			auth=('apikey', self.api_key),
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertIsNotNone(response.json().get('categories'))
+
+	def test_create_interest_category_in_list(self):
+		
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+			auth=('apikey', self.api_key),
+			json={
+				'title': self._get_guid(),
+				'type': 'checkboxes'
+			}
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertIsNotNone(response.json().get('id'))
+
+	def test_create_interest_category_of_each_type_in_list(self):
+
+		for interest_type in ('checkboxes', 'dropdown', 'radio', 'hidden'):
+			response = requests.post(
+				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+				auth=('apikey', self.api_key),
+				json={
+					'title': self._get_guid(),
+					'type': interest_type
+				}
+			)
+
+			self.assertEqual(response.status_code, 200)
+			self.assertEqual(response.json().get('type'), interest_type)
+
+	def test_get_specific_interest_category(self):
+
+		# create the category
+		category_name = self._get_guid()
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+			auth=('apikey', self.api_key),
+			json={
+				'title': category_name,
+				'type': 'checkboxes'
+			}
+		)
+
+		category_id = response.json().get('id')
+
+		# retrieve that category
+		response = requests.get(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}'.format(self.subdomain, self.list_id, category_id),
+			auth=('apikey', self.api_key)
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json().get('title'), category_name)
+
+
+class InterestsTest(BaseMailChimpTest):
+
+	def test_get_all_interests_of_empty_category(self):
+
+		# create the category
+		category_name = self._get_guid()
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+			auth=('apikey', self.api_key),
+			json={
+				'title': category_name,
+				'type': 'checkboxes'
+			}
+		)
+
+		category_id = response.json().get('id')
+
+		# get all the interests of that category (should be none)
+		response = requests.get(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			auth=('apikey', self.api_key)
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json().get('interests'), [])
+		self.assertEqual(response.json().get('total_items'), 0)
+
+	def test_can_create_an_interest_in_a_category(self):
+
+		# create the category
+		category_name = self._get_guid()
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+			auth=('apikey', self.api_key),
+			json={
+				'title': category_name,
+				'type': 'checkboxes'
+			}
+		)
+
+		category_id = response.json().get('id')
+
+		# create an interest in that category
+		interest_name = self._get_guid()
+
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			auth=('apikey', self.api_key),
+			json={
+				'name': interest_name,
+				'display_order': 1,
+			}
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json().get('name'), interest_name)
+
+	def test_can_get_a_specific_interest(self):
+
+		# create the category
+		category_name = self._get_guid()
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+			auth=('apikey', self.api_key),
+			json={
+				'title': category_name,
+				'type': 'checkboxes'
+			}
+		)
+
+		category_id = response.json().get('id')
+
+		# create an interest in that category
+		interest_name = self._get_guid()
+
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			auth=('apikey', self.api_key),
+			json={
+				'name': interest_name,
+				'display_order': 1,
+			}
+		)
+
+		interest_id = response.json().get('id')		
+
+		# retrieve that interest
+		response = requests.get(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests/{}'.format(self.subdomain, self.list_id, category_id, interest_id),
+			auth=('apikey', self.api_key)
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json().get('name'), interest_name)		
+		self.assertEqual(response.json().get('id'), interest_id)		
+
+
+	def test_get_all_interests_of_category_with_interests(self):
+
+		# create the category
+		category_name = self._get_guid()
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+			auth=('apikey', self.api_key),
+			json={
+				'title': category_name,
+				'type': 'checkboxes'
+			}
+		)
+
+		category_id = response.json().get('id')
+
+		# create two interests in that category
+		interest_one_name = self._get_guid()
+		interest_two_name = self._get_guid()
+
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			auth=('apikey', self.api_key),
+			json={
+				'name': interest_one_name,
+				'display_order': 1,
+			}
+		)
+		interest_one_id = response.json().get('id')	
+
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			auth=('apikey', self.api_key),
+			json={
+				'name': interest_two_name,
+				'display_order': 1,
+			}
+		)
+		interest_two_id = response.json().get('id')
+
+		# get all interests of category (should be two)
+		response = requests.get(
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			auth=('apikey', self.api_key)
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json().get('total_items'), 2)
+		self.assertEqual(len(response.json().get('interests')), 2)
+		self.assertEqual(response.json().get('interests')[0].get('name'), interest_one_name)
+		self.assertEqual(response.json().get('interests')[0].get('id'), interest_one_id)
+		self.assertEqual(response.json().get('interests')[1].get('name'), interest_two_name)
+		self.assertEqual(response.json().get('interests')[1].get('id'), interest_two_id)
+
+		# print(response.status_code)
+		# print(pformat(response.json()))
+		
 if __name__ == '__main__':
 	unittest.main(warnings='ignore') # suppress this warning: ResourceWarning: unclosed <ssl.SSLSocket

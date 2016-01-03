@@ -11,7 +11,10 @@ from . import config
 
 class BaseMailChimpTest(TestCase):
 
-	def setUp(self):
+	cassette_dir = 'cassettes'
+
+	@classmethod
+	def setUpClass(self):
 
 		self.api_key = config.MAILCHIMP_API_KEY
 		self.list_id = config.MAILCHIMP_LIST_ID
@@ -24,8 +27,14 @@ class BaseMailChimpTest(TestCase):
 		MAILCHIMP_REQUEST_AUTH_HEADER_NAME = 'apikey'
 		MAILCHIMP_REQUEST_AUTH_HEADER = '{}:{}'.format(MAILCHIMP_REQUEST_AUTH_HEADER_NAME, self.api_key)
 
+		# create the directory to store betamax cassettes
+		# if self.cassette_dir is None:
+		# 	self.cassette_dir = 'cassettes'
+		abs_cassette_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.cassette_dir)
+		os.makedirs(abs_cassette_dir, exist_ok=True)
+
 		with Betamax.configure() as betamaxconfig:
-			betamaxconfig.cassette_library_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cassettes')
+			betamaxconfig.cassette_library_dir = abs_cassette_dir
 			betamaxconfig.default_cassette_options['record_mode'] = 'new_episodes'
 			betamaxconfig.define_cassette_placeholder(
 				'<MAILCHIMP_AUTH_B64>',
@@ -37,7 +46,10 @@ class BaseMailChimpTest(TestCase):
 				'<MAILCHIMP_LIST_ID>',
 				self.list_id
 			)
-
+			betamaxconfig.define_cassette_placeholder(
+				'<MAILCHIMP_SUBDOMAIN>',
+				self.subdomain
+			)
 		Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
 
 		# suppress these warnings (due to requests module): ResourceWarning: unclosed <ssl.SSLSocket
@@ -103,3 +115,12 @@ class BaseMailChimpTest(TestCase):
 			'name': response.json().get('name'),
 			'response': response
 		}
+
+class BaseMailChimpAPITest(BaseMailChimpTest):
+
+	cassette_dir = 'cassettes/api'
+
+
+class BaseMailChimpClientTest(BaseMailChimpTest):
+
+	cassette_dir = 'cassettes/client'

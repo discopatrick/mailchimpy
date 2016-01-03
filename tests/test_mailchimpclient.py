@@ -5,12 +5,12 @@ import requests
 import hashlib
 from betamax import Betamax
 
-from .basemailchimptest import BaseMailChimpTest
+from .basemailchimptest import BaseMailChimpClientTest
 from mailchimpy.mailchimpy import MailChimpClient
 from . import config
 
 
-class MailChimpClientTest(BaseMailChimpTest):
+class MailChimpClientTest(BaseMailChimpClientTest):
 
 	def setUp(self):
 
@@ -29,11 +29,11 @@ class MailChimpClientTest(BaseMailChimpTest):
 
 		email = self._get_fresh_email()
 
-		# with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
-		subscribed = self.mc.check_subscription_status(email, self.list_id)
+		with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
+			subscribed = self.mc.check_subscription_status(email, self.list_id)
 
-		self.assertIsNotNone(subscribed)
-		self.assertFalse(subscribed)
+			self.assertIsNotNone(subscribed)
+			self.assertFalse(subscribed)
 
 	def test_check_subscription_status_returns_true_for_email_address_already_subscribed_to_list(self):
 

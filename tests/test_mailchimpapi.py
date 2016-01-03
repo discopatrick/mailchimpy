@@ -362,6 +362,3 @@ class InterestsTest(BaseMailChimpTest):
 
 		# print(response.status_code)
 		# print(pformat(response.json()))
-		
-if __name__ == '__main__':
-	unittest.main(warnings='ignore') # suppress this warning: ResourceWarning: unclosed <ssl.SSLSocket

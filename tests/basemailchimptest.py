@@ -1,4 +1,5 @@
 import os
+import warnings
 from unittest import TestCase
 from uuid import uuid4
 import requests
@@ -38,6 +39,10 @@ class BaseMailChimpTest(TestCase):
 			)
 
 		Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
+
+		# suppress these warnings (due to requests module): ResourceWarning: unclosed <ssl.SSLSocket
+		warnings.simplefilter("ignore", ResourceWarning)
+
 
 	def _get_guid(self):
 		return str(uuid4())

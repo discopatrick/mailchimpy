@@ -9,11 +9,6 @@ from .basemailchimptest import BaseMailChimpTest
 from mailchimpy.mailchimpy import MailChimpClient
 from . import config
 
-def ignore_warnings(test_func):
-    def do_test(self, *args, **kwargs):
-        with warnings.catch_warnings():
-            test_func(self, *args, **kwargs)
-    return do_test
 
 class MailChimpClientTest(BaseMailChimpTest):
 
@@ -113,6 +108,3 @@ class MailChimpClientTest(BaseMailChimpTest):
 		success = self.mc.unsubscribe_email_from_list(email, self.list_id)
 
 		self.assertIsNone(success)
-
-if __name__ == '__main__':
-	unittest.main(warnings='ignore') # suppress this warning: ResourceWarning: unclosed <ssl.SSLSocket

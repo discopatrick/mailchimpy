@@ -36,9 +36,9 @@ There are two test classes:
 ### MailChimpClientTest
 
 These tests are for our client. From the project root, run:
-`python3 -m tests.mailchimpclient_test`
+`python3 -m unittest tests.test_mailchimpclient`
 
 ### MailChimpAPITest
 
 These tests are for the MailChimp API itself. While we wouldn't normally want to test the API directly, these tests help us understand how the API works, and will warn us of any changes to the API that may be introduced. From the project root, run:
-`python3 -m tests.mailchimpapi_test`
+`python3 -m unittest tests.test_mailchimpapi`

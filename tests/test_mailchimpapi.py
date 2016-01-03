@@ -8,6 +8,67 @@ from pprint import pformat
 from .basemailchimptest import BaseMailChimpTest
 from . import config
 
+class ListsTest(BaseMailChimpTest):
+
+	def test_getting_all_lists(self):
+
+		response = requests.get(
+			'https://{}.api.mailchimp.com/3.0/lists'.format(self.subdomain),
+			auth=('apikey', self.api_key)
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertIsNotNone(response.json().get('lists'))
+
+	def test_creating_a_list(self):
+
+		list_name = self._get_guid()
+
+		response = requests.post(
+			'https://{}.api.mailchimp.com/3.0/lists'.format(self.subdomain),
+			auth=('apikey', self.api_key),
+			json={
+				'name': list_name,
+				'contact': {
+					'company': 'company',
+					'address1': 'address1',
+					'city': 'city',
+					'state': 'state',
+					'zip': 'zip',
+					'country': 'country'
+				},
+				'permission_reminder': 'permission reminder',
+				'campaign_defaults': {
+					'from_name': 'from name',
+					'from_email': self._get_fresh_email(),
+					'subject': 'subject',
+					'language': 'language'
+				},
+				'email_type_option': False
+			}
+		)		
+
+		self.assertEqual(response.status_code, 200)
+		self.assertIsNotNone(response.json().get('id'))
+		self.assertEqual(response.json().get('name'), list_name)
+
+	def test_getting_a_specific_list(self):
+
+		new_list = self._api_create_new_list()
+
+		# retrieve that list
+		response = requests.get(
+			'https://{}.api.mailchimp.com/3.0/lists/{}'.format(self.subdomain, new_list['id']),
+			auth=('apikey', self.api_key)
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.json().get('id'), new_list['id'])
+		self.assertEqual(response.json().get('name'), new_list['name'])
+
+		# print(response.status_code)
+		# print(pformat(response.json()))
+
 class MailChimpAPITest(BaseMailChimpTest):
 	
 	# def setUp(self):
@@ -211,13 +272,21 @@ class InterestCategoriesTest(BaseMailChimpTest):
 
 
 class InterestsTest(BaseMailChimpTest):
+	"""
+	Testing interests is currently done against an isolated list
+	for each test, as each list has a maximum of 60 interests across all
+	interest-categories for that list.
+	"""
 
 	def test_get_all_interests_of_empty_category(self):
+
+		# create the list
+		new_list = self._api_create_new_list()
 
 		# create the category
 		category_name = self._get_guid()
 		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, new_list['id']),
 			auth=('apikey', self.api_key),
 			json={
 				'title': category_name,
@@ -229,7 +298,7 @@ class InterestsTest(BaseMailChimpTest):
 
 		# get all the interests of that category (should be none)
 		response = requests.get(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
 			auth=('apikey', self.api_key)
 		)
 
@@ -239,10 +308,13 @@ class InterestsTest(BaseMailChimpTest):
 
 	def test_can_create_an_interest_in_a_category(self):
 
+		# create the list
+		new_list = self._api_create_new_list()
+
 		# create the category
 		category_name = self._get_guid()
 		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, new_list['id']),
 			auth=('apikey', self.api_key),
 			json={
 				'title': category_name,
@@ -256,7 +328,7 @@ class InterestsTest(BaseMailChimpTest):
 		interest_name = self._get_guid()
 
 		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
 			auth=('apikey', self.api_key),
 			json={
 				'name': interest_name,
@@ -269,10 +341,13 @@ class InterestsTest(BaseMailChimpTest):
 
 	def test_can_get_a_specific_interest(self):
 
+		# create the list
+		new_list = self._api_create_new_list()
+
 		# create the category
 		category_name = self._get_guid()
 		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, new_list['id']),
 			auth=('apikey', self.api_key),
 			json={
 				'title': category_name,
@@ -286,7 +361,7 @@ class InterestsTest(BaseMailChimpTest):
 		interest_name = self._get_guid()
 
 		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
 			auth=('apikey', self.api_key),
 			json={
 				'name': interest_name,
@@ -298,7 +373,7 @@ class InterestsTest(BaseMailChimpTest):
 
 		# retrieve that interest
 		response = requests.get(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests/{}'.format(self.subdomain, self.list_id, category_id, interest_id),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests/{}'.format(self.subdomain, new_list['id'], category_id, interest_id),
 			auth=('apikey', self.api_key)
 		)
 
@@ -309,10 +384,13 @@ class InterestsTest(BaseMailChimpTest):
 
 	def test_get_all_interests_of_category_with_interests(self):
 
+		# create the list
+		new_list = self._api_create_new_list()
+
 		# create the category
 		category_name = self._get_guid()
 		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, new_list['id']),
 			auth=('apikey', self.api_key),
 			json={
 				'title': category_name,
@@ -327,7 +405,7 @@ class InterestsTest(BaseMailChimpTest):
 		interest_two_name = self._get_guid()
 
 		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
 			auth=('apikey', self.api_key),
 			json={
 				'name': interest_one_name,
@@ -337,7 +415,7 @@ class InterestsTest(BaseMailChimpTest):
 		interest_one_id = response.json().get('id')	
 
 		response = requests.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
 			auth=('apikey', self.api_key),
 			json={
 				'name': interest_two_name,
@@ -348,7 +426,7 @@ class InterestsTest(BaseMailChimpTest):
 
 		# get all interests of category (should be two)
 		response = requests.get(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, self.list_id, category_id),
+			'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
 			auth=('apikey', self.api_key)
 		)
 

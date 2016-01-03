@@ -84,16 +84,13 @@ class BaseMailChimpTest(TestCase):
 			json={'email_address': email, 'status': 'subscribed'}
 		)
 
-	def _api_create_new_list(self, list_name=None, requests_session=None):
+	def _api_create_new_list(self, list_name=None):
 
 		if not list_name:
 			list_name = self._get_guid()
 
-		if not requests_session:
-			requests_session = requests.Session()
-
 		# subscribe an email address to the list (via direct API call)
-		response = requests_session.post(
+		response = self.session.post(
 			'https://{}.api.mailchimp.com/3.0/lists'.format(self.subdomain),
 			auth=('apikey', self.api_key),
 			json={

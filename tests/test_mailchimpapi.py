@@ -58,7 +58,7 @@ class ListsTest(BaseMailChimpAPITest):
 	def test_getting_a_specific_list(self):
 
 		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-			new_list = self._api_create_new_list(requests_session=self.session)
+			new_list = self._api_create_new_list()
 
 		# retrieve that list
 		with self.recorder.use_cassette(self.id()):

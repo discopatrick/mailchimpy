@@ -36,9 +36,13 @@ There are two test modules:
 These tests are for our client. Some of the tests rely on an email address already being subscribed to the list. Because of this, some tests need to make an extra API call to create this subscription before performing the test itself. Wherever this occurs, the 'arrange' step of the test will make API calls via Python's **requests** module, while the 'act' step of the test will use our **mailchimpy** client. This is to ensure (as much as is possible) that we are only testing one thing at a time.
 
 From the project root, run:
+
 `python3 -m unittest tests.test_mailchimpclient`
 
 ### test_mailchimpapi
 
-These tests are for the MailChimp API itself. Strictly, we shouldn't be testing the API directly, as it's not our code. However, these tests help us understand how the API works, and will warn us of any changes to the API that may be introduced. From the project root, run:
+These tests are for the MailChimp API itself. Strictly, we shouldn't be testing the API directly, as it's not our code. However, these tests help us understand how the API works, and will warn us of any changes to the API that may be introduced.
+
+From the project root, run:
+
 `python3 -m unittest tests.test_mailchimpapi`

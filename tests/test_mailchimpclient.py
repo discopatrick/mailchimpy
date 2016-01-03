@@ -29,7 +29,7 @@ class MailChimpClientTest(BaseMailChimpClientTest):
 
 		email = self._get_fresh_email()
 
-		with self.recorder.use_cassette(self.id(), serialize_with='prettyjson'):
+		with self.recorder.use_cassette(self.id()):
 			subscribed = self.mc.check_subscription_status(email, self.list_id)
 
 			self.assertIsNotNone(subscribed)

@@ -33,9 +33,11 @@ class BaseMailChimpTest(TestCase):
 		abs_cassette_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.cassette_dir)
 		os.makedirs(abs_cassette_dir, exist_ok=True)
 
+		Betamax.register_serializer(pretty_json.PrettyJSONSerializer)	
 		with Betamax.configure() as betamaxconfig:
 			betamaxconfig.cassette_library_dir = abs_cassette_dir
 			betamaxconfig.default_cassette_options['record_mode'] = 'new_episodes'
+			betamaxconfig.default_cassette_options['serialize_with'] = 'prettyjson'
 			betamaxconfig.define_cassette_placeholder(
 				'<MAILCHIMP_AUTH_B64>',
 				base64.b64encode(
@@ -50,7 +52,7 @@ class BaseMailChimpTest(TestCase):
 				'<MAILCHIMP_SUBDOMAIN>',
 				self.subdomain
 			)
-		Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
+
 
 		# suppress these warnings (due to requests module): ResourceWarning: unclosed <ssl.SSLSocket
 		warnings.simplefilter("ignore", ResourceWarning)

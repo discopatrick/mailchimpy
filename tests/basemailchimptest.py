@@ -93,7 +93,7 @@ class BaseMailChimpTest(TestCase):
 			requests_session = requests.Session()
 
 		# subscribe an email address to the list (via direct API call)
-		response = requests.post(
+		response = requests_session.post(
 			'https://{}.api.mailchimp.com/3.0/lists'.format(self.subdomain),
 			auth=('apikey', self.api_key),
 			json={

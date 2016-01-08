@@ -9,9 +9,10 @@ gulp.task('lint:tests', shell.task([
   'virtualenv/bin/autopep8 ./tests --recursive --in-place'
 ]));
 
-gulp.task('test', shell.task([
-  'virtualenv/bin/python -m unittest'
-]));
+gulp.task('test', shell.task(
+  ['virtualenv/bin/python -m unittest'],
+  { ignoreErrors: true }
+));
 
 gulp.task('watch', function() {
   gulp.watch('mailchimpy/**/*.py', ['test']);

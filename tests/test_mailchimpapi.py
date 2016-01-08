@@ -80,6 +80,16 @@ class ListsAPITest(BaseMailChimpAPITest):
         # print(response.status_code)
         # print(pformat(response.json()))
 
+    def test_deleting_a_list(self):
+
+        with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+            new_list = self._api_create_new_list()
+
+        with self.recorder.use_cassette(self.id()):
+            result = self._api_delete_list(new_list['id'])
+
+        self.assertEqual(result['response'].content, b'')
+        self.assertEqual(result['response'].status_code, 204)
 
 class MembersAPITest(BaseMailChimpAPITest):
 
@@ -350,6 +360,10 @@ class InterestsAPITest(BaseMailChimpAPITest):
         self.assertEqual(response.json().get('interests'), [])
         self.assertEqual(response.json().get('total_items'), 0)
 
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
+
+
     def test_can_create_an_interest_in_a_category(self):
 
         with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
@@ -387,6 +401,10 @@ class InterestsAPITest(BaseMailChimpAPITest):
         self.assertEqual(response.status_code, 200)
         # self.assertEqual(response.json().get('name'), interest_name)
         self.assertIsNotNone(response.json().get('name'))
+
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
+
 
     def test_can_get_a_specific_interest(self):
 
@@ -438,6 +456,10 @@ class InterestsAPITest(BaseMailChimpAPITest):
         self.assertIsNotNone(response.json().get('name'))
         # self.assertEqual(response.json().get('id'), interest_id)
         self.assertIsNotNone(response.json().get('id'))
+
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
+
 
     def test_get_all_interests_of_category_with_interests(self):
 
@@ -503,6 +525,9 @@ class InterestsAPITest(BaseMailChimpAPITest):
         # self.assertEqual(response.json().get('interests')[0].get('id'), interest_one_id)
         # self.assertEqual(response.json().get('interests')[1].get('name'), interest_two_name)
         # self.assertEqual(response.json().get('interests')[1].get('id'), interest_two_id)
+        
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
 
         # print(response.status_code)
         # print(pformat(response.json()))

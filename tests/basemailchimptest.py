@@ -122,6 +122,17 @@ class BaseMailChimpTest(TestCase):
             'response': response
         }
 
+    def _api_delete_list(self, list_id):
+
+        response = self.session.delete(
+            'https://{}.api.mailchimp.com/3.0/lists/{}'.format(self.subdomain, list_id),
+            auth=('apikey', self.api_key)
+        )
+
+        return {
+            'response': response
+        }
+
 
 class BaseMailChimpAPITest(BaseMailChimpTest):
 

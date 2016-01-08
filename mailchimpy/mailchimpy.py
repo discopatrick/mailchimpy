@@ -16,7 +16,7 @@ class MailChimpClient(object):
         # set up a session for requests to be made in
         self.session = requests.Session()
 
-    def get_md5(self, string):
+    def _get_md5(self, string):
 
         hashobject = hashlib.md5(string.encode())
         md5 = hashobject.hexdigest()
@@ -33,7 +33,7 @@ class MailChimpClient(object):
 
     def check_subscription_status(self, email, list_id):
 
-        email_md5 = self.get_md5(email)
+        email_md5 = self._get_md5(email)
 
         response = self.session.get(
             'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
@@ -70,7 +70,7 @@ class MailChimpClient(object):
 
     def unsubscribe_email_from_list(self, email, list_id):
 
-        email_md5 = self.get_md5(email)
+        email_md5 = self._get_md5(email)
         response = self.session.patch(
             'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
                 self.subdomain, list_id, email_md5),

@@ -1,6 +1,7 @@
 import os
 import requests
 import hashlib
+from pprint import pformat
 
 
 class MailChimpClient(object):
@@ -86,3 +87,30 @@ class MailChimpClient(object):
             success = False
 
         return success
+
+    def create_interest_category(self, category_name, list_id):
+        
+        response = self.session.post(
+            'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                self.subdomain, list_id),
+            auth=('apikey', self.api_key),
+            json={'title': category_name, 'type': 'checkboxes'}
+        )
+
+        if response.status_code == 200:
+            success = True
+
+        return success
+
+    def get_interest_category(self, category_id, list_id):
+
+        response = self.session.get(
+            'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}'.format(
+                self.subdomain, list_id, category_id),
+            auth=('apikey', self.api_key)
+        )
+
+        if response.status_code == 200:
+            success = True
+
+        return success        

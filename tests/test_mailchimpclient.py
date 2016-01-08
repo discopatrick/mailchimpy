@@ -114,3 +114,30 @@ class MailChimpClientTest(BaseMailChimpClientTest):
             success = self.mc.unsubscribe_email_from_list(email, self.list_id)
 
         self.assertIsNone(success)
+
+    def test_create_new_interest_category(self):
+
+        category_name = self._get_guid()
+
+        with self.recorder.use_cassette(self.id()):
+            success = self.mc.create_interest_category(category_name, self.list_id)
+
+        self.assertTrue(success)
+
+    def test_get_existing_interest_category(self):
+
+        category_name = self._get_guid()
+
+        response = self.session.post(
+            'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                self.subdomain, self.list_id),
+            auth=('apikey', self.api_key),
+            json={'title': category_name, 'type': 'checkboxes'}
+        )
+
+        category_id = response.json().get('id')
+
+        with self.recorder.use_cassette(self.id()):
+            success = self.mc.get_interest_category(category_id, self.list_id)
+
+        self.assertTrue(success)

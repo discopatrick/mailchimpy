@@ -128,12 +128,13 @@ class MailChimpClientTest(BaseMailChimpClientTest):
 
         category_name = self._get_guid()
 
-        response = self.session.post(
-            'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
-                self.subdomain, self.list_id),
-            auth=('apikey', self.api_key),
-            json={'title': category_name, 'type': 'checkboxes'}
-        )
+        with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                    self.subdomain, self.list_id),
+                auth=('apikey', self.api_key),
+                json={'title': category_name, 'type': 'checkboxes'}
+            )
 
         category_id = response.json().get('id')
 

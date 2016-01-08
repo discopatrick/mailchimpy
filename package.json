@@ -1,0 +1,15 @@
+{
+  "name": "mailchimpy",
+  "version": "0.1.0dev",
+  "description": "A python 3 client for the MailChimp API v3, while we're waiting for the official MailChimp python wrapper to be released.",
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-flake8": "^0.1.3",
+    "gulp": "^3.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://discopatrick@github.com/discopatrick/mailchimpy.git"
+  }
+}

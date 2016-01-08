@@ -8,471 +8,501 @@ from pprint import pformat
 from .basemailchimptest import BaseMailChimpTest, BaseMailChimpAPITest
 from . import config
 
+
 class ListsAPITest(BaseMailChimpAPITest):
 
-	def test_getting_all_lists(self):
+    def test_getting_all_lists(self):
 
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.get(
-				'https://{}.api.mailchimp.com/3.0/lists'.format(self.subdomain),
-				auth=('apikey', self.api_key)
-			)
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.get(
+                'https://{}.api.mailchimp.com/3.0/lists'.format(
+                    self.subdomain),
+                auth=('apikey', self.api_key)
+            )
 
-		self.assertEqual(response.status_code, 200)
-		self.assertIsNotNone(response.json().get('lists'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(response.json().get('lists'))
 
-	def test_creating_a_list(self):
+    def test_creating_a_list(self):
 
-		list_name = self._get_guid()
+        list_name = self._get_guid()
 
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists'.format(self.subdomain),
-				auth=('apikey', self.api_key),
-				json={
-					'name': list_name,
-					'contact': {
-						'company': 'company',
-						'address1': 'address1',
-						'city': 'city',
-						'state': 'state',
-						'zip': 'zip',
-						'country': 'country'
-					},
-					'permission_reminder': 'permission reminder',
-					'campaign_defaults': {
-						'from_name': 'from name',
-						'from_email': self._get_fresh_email(),
-						'subject': 'subject',
-						'language': 'language'
-					},
-					'email_type_option': False
-				}
-			)		
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists'.format(
+                    self.subdomain),
+                auth=('apikey', self.api_key),
+                json={
+                    'name': list_name,
+                    'contact': {
+                        'company': 'company',
+                        'address1': 'address1',
+                        'city': 'city',
+                        'state': 'state',
+                        'zip': 'zip',
+                        'country': 'country'
+                    },
+                    'permission_reminder': 'permission reminder',
+                    'campaign_defaults': {
+                        'from_name': 'from name',
+                        'from_email': self._get_fresh_email(),
+                        'subject': 'subject',
+                        'language': 'language'
+                    },
+                    'email_type_option': False
+                }
+            )
 
-		self.assertEqual(response.status_code, 200)
-		self.assertIsNotNone(response.json().get('id'))
-		# self.assertEqual(response.json().get('name'), list_name)
-		self.assertIsNotNone(response.json().get('name'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(response.json().get('id'))
+        # self.assertEqual(response.json().get('name'), list_name)
+        self.assertIsNotNone(response.json().get('name'))
 
-	def test_getting_a_specific_list(self):
+    def test_getting_a_specific_list(self):
 
-		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-			new_list = self._api_create_new_list()
+        with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+            new_list = self._api_create_new_list()
 
-		# retrieve that list
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.get(
-				'https://{}.api.mailchimp.com/3.0/lists/{}'.format(self.subdomain, new_list['id']),
-				auth=('apikey', self.api_key)
-			)
+        # retrieve that list
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.get(
+                'https://{}.api.mailchimp.com/3.0/lists/{}'.format(
+                    self.subdomain, new_list['id']),
+                auth=('apikey', self.api_key)
+            )
 
-		self.assertEqual(response.status_code, 200)
-		# self.assertEqual(response.json().get('id'), new_list['id'])
-		self.assertIsNotNone(response.json().get('id'))
-		# self.assertEqual(response.json().get('name'), new_list['name'])
-		self.assertIsNotNone(response.json().get('name'))
+        self.assertEqual(response.status_code, 200)
+        # self.assertEqual(response.json().get('id'), new_list['id'])
+        self.assertIsNotNone(response.json().get('id'))
+        # self.assertEqual(response.json().get('name'), new_list['name'])
+        self.assertIsNotNone(response.json().get('name'))
 
-		# print(response.status_code)
-		# print(pformat(response.json()))
+        # print(response.status_code)
+        # print(pformat(response.json()))
+
 
 class MembersAPITest(BaseMailChimpAPITest):
 
-	def get_md5(self, string):
+    def get_md5(self, string):
 
-		hashobject = hashlib.md5(string.encode())
-		md5 = hashobject.hexdigest()
-		return md5
+        hashobject = hashlib.md5(string.encode())
+        md5 = hashobject.hexdigest()
+        return md5
 
-	def test_api_returns_a_response(self):
+    def test_api_returns_a_response(self):
 
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.get(
-				'https://{}.api.mailchimp.com/3.0/'.format(self.subdomain),
-				auth=('apikey', self.api_key)
-			)
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.get(
+                'https://{}.api.mailchimp.com/3.0/'.format(self.subdomain),
+                auth=('apikey', self.api_key)
+            )
 
-		self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
-	def test_can_check_if_email_address_is_subscribed_to_list(self):
+    def test_can_check_if_email_address_is_subscribed_to_list(self):
 
-		email = self._get_fresh_email()
-		email_md5 = self.get_md5(email)
+        email = self._get_fresh_email()
+        email_md5 = self.get_md5(email)
 
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.get(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
-				auth=('apikey', self.api_key)
-			)
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.get(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
+                    self.subdomain, self.list_id, email_md5),
+                auth=('apikey', self.api_key)
+            )
 
-		self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
-	def test_can_subscribe_a_new_email_to_list(self):
+    def test_can_subscribe_a_new_email_to_list(self):
 
-		email = self._get_fresh_email()
+        email = self._get_fresh_email()
 
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
-				auth=('apikey', self.api_key),
-				json={'email_address': email, 'status': 'subscribed'}
-			)
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(
+                    self.subdomain, self.list_id),
+                auth=('apikey', self.api_key),
+                json={'email_address': email, 'status': 'subscribed'}
+            )
 
-		self.assertEqual(response.status_code, 200)
-		self.assertEqual(response.json().get('status'), 'subscribed')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json().get('status'), 'subscribed')
 
-	def test_subscribing_an_email_that_is_already_subscribed(self):
+    def test_subscribing_an_email_that_is_already_subscribed(self):
 
-		email = self._get_fresh_email()
+        email = self._get_fresh_email()
 
-		# subscribe an email address to the list
-		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-			self._api_subscribe_email_to_list(email, self.list_id)
+        # subscribe an email address to the list
+        with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+            self._api_subscribe_email_to_list(email, self.list_id)
 
-		# attempt to subscribe that same email address again
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
-				auth=('apikey', self.api_key),
-				json={'email_address': email, 'status': 'subscribed'}
-			)
+        # attempt to subscribe that same email address again
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(
+                    self.subdomain, self.list_id),
+                auth=('apikey', self.api_key),
+                json={'email_address': email, 'status': 'subscribed'}
+            )
 
-		self.assertEqual(response.status_code, 400)
-		self.assertEqual(response.json().get('title'), 'Member Exists')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json().get('title'), 'Member Exists')
 
-	def test_subscribing_a_known_disallowed_email(self):
+    def test_subscribing_a_known_disallowed_email(self):
 
-		known_disallowed_email = 'anything@example.com'
+        known_disallowed_email = 'anything@example.com'
 
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, self.list_id),
-				auth=('apikey', self.api_key),
-				json={'email_address': known_disallowed_email, 'status': 'subscribed'}
-			)
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(
+                    self.subdomain, self.list_id),
+                auth=('apikey', self.api_key),
+                json={'email_address': known_disallowed_email,
+                      'status': 'subscribed'}
+            )
 
-		self.assertEqual(response.status_code, 400)
-		self.assertEqual(response.json().get('title'), 'Invalid Resource')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json().get('title'), 'Invalid Resource')
 
-	def test_unsubscribing_an_email(self):
+    def test_unsubscribing_an_email(self):
 
-		email = self._get_fresh_email()
+        email = self._get_fresh_email()
 
-		# subscribe an email address to the list
-		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-			self._api_subscribe_email_to_list(email, self.list_id)
-		
-		email_md5 = self.get_md5(email)
+        # subscribe an email address to the list
+        with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+            self._api_subscribe_email_to_list(email, self.list_id)
 
-		# unsubscribe that same email address from the list
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.patch(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
-				auth=('apikey', self.api_key),
-				json={'status': 'unsubscribed'}
-			)
+        email_md5 = self.get_md5(email)
 
-		self.assertEqual(response.status_code, 200)
-		self.assertEqual(response.json().get('status'), 'unsubscribed')
+        # unsubscribe that same email address from the list
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.patch(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
+                    self.subdomain, self.list_id, email_md5),
+                auth=('apikey', self.api_key),
+                json={'status': 'unsubscribed'}
+            )
 
-	def test_unsubscribing_an_email_that_is_already_unsubscribed(self):
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json().get('status'), 'unsubscribed')
 
-		email = self._get_fresh_email()
-	
-		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-			# subscribe an email address to the list
-			self._api_subscribe_email_to_list(email, self.list_id)
+    def test_unsubscribing_an_email_that_is_already_unsubscribed(self):
 
-			# unsubscribe that same email address from the list		
-			email_md5 = self.get_md5(email)
-			response = self.session.patch(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
-				auth=('apikey', self.api_key),
-				json={'status': 'unsubscribed'}
-			)
+        email = self._get_fresh_email()
 
-		# attempt to unsubscribe again	
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.patch(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
-				auth=('apikey', self.api_key),
-				json={'status': 'unsubscribed'}
-			)
+        with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+            # subscribe an email address to the list
+            self._api_subscribe_email_to_list(email, self.list_id)
 
-		self.assertEqual(response.status_code, 200)
-		self.assertEqual(response.json().get('status'), 'unsubscribed')
+            # unsubscribe that same email address from the list
+            email_md5 = self.get_md5(email)
+            response = self.session.patch(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
+                    self.subdomain, self.list_id, email_md5),
+                auth=('apikey', self.api_key),
+                json={'status': 'unsubscribed'}
+            )
 
-	def test_unsubscribing_an_email_that_has_never_existed_in_the_list(self):
+        # attempt to unsubscribe again
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.patch(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
+                    self.subdomain, self.list_id, email_md5),
+                auth=('apikey', self.api_key),
+                json={'status': 'unsubscribed'}
+            )
 
-		email = self._get_fresh_email()
-		email_md5 = self.get_md5(email)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json().get('status'), 'unsubscribed')
 
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.patch(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, self.list_id, email_md5),
-				auth=('apikey', self.api_key),
-				json={'status': 'unsubscribed'}
-			)
+    def test_unsubscribing_an_email_that_has_never_existed_in_the_list(self):
 
-		self.assertEqual(response.status_code, 404)
-		self.assertEqual(response.json().get('title'), 'Resource Not Found')
+        email = self._get_fresh_email()
+        email_md5 = self.get_md5(email)
+
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.patch(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
+                    self.subdomain, self.list_id, email_md5),
+                auth=('apikey', self.api_key),
+                json={'status': 'unsubscribed'}
+            )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json().get('title'), 'Resource Not Found')
+
 
 class InterestCategoriesAPITest(BaseMailChimpAPITest):
 
-	def test_get_all_interest_categories_of_list(self):
+    def test_get_all_interest_categories_of_list(self):
 
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.get(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
-				auth=('apikey', self.api_key),
-			)
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.get(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                    self.subdomain, self.list_id),
+                auth=('apikey', self.api_key),
+            )
 
-		self.assertEqual(response.status_code, 200)
-		self.assertIsNotNone(response.json().get('categories'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(response.json().get('categories'))
 
-	def test_create_interest_category_in_list(self):
-		
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
-				auth=('apikey', self.api_key),
-				json={
-					'title': self._get_guid(),
-					'type': 'checkboxes'
-				}
-			)
+    def test_create_interest_category_in_list(self):
 
-		self.assertEqual(response.status_code, 200)
-		self.assertIsNotNone(response.json().get('id'))
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                    self.subdomain, self.list_id),
+                auth=('apikey', self.api_key),
+                json={
+                    'title': self._get_guid(),
+                    'type': 'checkboxes'
+                }
+            )
 
-	def test_create_interest_category_of_each_type_in_list(self):
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(response.json().get('id'))
 
-		for interest_type in ('checkboxes', 'dropdown', 'radio', 'hidden'):
-			with self.recorder.use_cassette('{}_{}'.format(self.id(), interest_type)):
-				response = self.session.post(
-					'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
-					auth=('apikey', self.api_key),
-					json={
-						'title': self._get_guid(),
-						'type': interest_type
-					}
-				)
+    def test_create_interest_category_of_each_type_in_list(self):
 
-				self.assertEqual(response.status_code, 200)
-				self.assertEqual(response.json().get('type'), interest_type)
+        for interest_type in ('checkboxes', 'dropdown', 'radio', 'hidden'):
+            with self.recorder.use_cassette('{}_{}'.format(self.id(), interest_type)):
+                response = self.session.post(
+                    'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                        self.subdomain, self.list_id),
+                    auth=('apikey', self.api_key),
+                    json={
+                        'title': self._get_guid(),
+                        'type': interest_type
+                    }
+                )
 
-	def test_get_specific_interest_category(self):
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json().get('type'), interest_type)
 
-		# create the category
-		category_name = self._get_guid()
+    def test_get_specific_interest_category(self):
 
-		with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, self.list_id),
-				auth=('apikey', self.api_key),
-				json={
-					'title': category_name,
-					'type': 'checkboxes'
-				}
-			)
+        # create the category
+        category_name = self._get_guid()
 
-		category_id = response.json().get('id')
+        with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                    self.subdomain, self.list_id),
+                auth=('apikey', self.api_key),
+                json={
+                    'title': category_name,
+                    'type': 'checkboxes'
+                }
+            )
 
-		# retrieve that category
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.get(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}'.format(self.subdomain, self.list_id, category_id),
-				auth=('apikey', self.api_key)
-			)
+        category_id = response.json().get('id')
 
-		self.assertEqual(response.status_code, 200)
-		# self.assertEqual(response.json().get('title'), category_name)
-		self.assertIsNotNone(response.json().get('title'))
+        # retrieve that category
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.get(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}'.format(
+                    self.subdomain, self.list_id, category_id),
+                auth=('apikey', self.api_key)
+            )
+
+        self.assertEqual(response.status_code, 200)
+        # self.assertEqual(response.json().get('title'), category_name)
+        self.assertIsNotNone(response.json().get('title'))
+
 
 class InterestsAPITest(BaseMailChimpAPITest):
-	"""
-	Testing interests is currently done against an isolated list
-	for each test, as each list has a maximum of 60 interests across all
-	interest-categories for that list.
-	"""
+    """
+    Testing interests is currently done against an isolated list
+    for each test, as each list has a maximum of 60 interests across all
+    interest-categories for that list.
+    """
 
-	def test_get_all_interests_of_empty_category(self):
+    def test_get_all_interests_of_empty_category(self):
 
-		with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
-			# create the list
-			new_list = self._api_create_new_list()
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            # create the list
+            new_list = self._api_create_new_list()
 
-		with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-			# create the category
-			category_name = self._get_guid()
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, new_list['id']),
-				auth=('apikey', self.api_key),
-				json={
-					'title': category_name,
-					'type': 'checkboxes'
-				}
-			)	
+        with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
+            # create the category
+            category_name = self._get_guid()
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                    self.subdomain, new_list['id']),
+                auth=('apikey', self.api_key),
+                json={
+                    'title': category_name,
+                    'type': 'checkboxes'
+                }
+            )
 
-		category_id = response.json().get('id')
+        category_id = response.json().get('id')
 
-		# get all the interests of that category (should be none)
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.get(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
-				auth=('apikey', self.api_key)
-			)
+        # get all the interests of that category (should be none)
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.get(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
+                    self.subdomain, new_list['id'], category_id),
+                auth=('apikey', self.api_key)
+            )
 
-		self.assertEqual(response.status_code, 200)
-		self.assertEqual(response.json().get('interests'), [])
-		self.assertEqual(response.json().get('total_items'), 0)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json().get('interests'), [])
+        self.assertEqual(response.json().get('total_items'), 0)
 
-	def test_can_create_an_interest_in_a_category(self):
+    def test_can_create_an_interest_in_a_category(self):
 
-		with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
-			# create the list
-			new_list = self._api_create_new_list()
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            # create the list
+            new_list = self._api_create_new_list()
 
-		with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-			# create the category
-			category_name = self._get_guid()
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, new_list['id']),
-				auth=('apikey', self.api_key),
-				json={
-					'title': category_name,
-					'type': 'checkboxes'
-				}
-			)
+        with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
+            # create the category
+            category_name = self._get_guid()
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                    self.subdomain, new_list['id']),
+                auth=('apikey', self.api_key),
+                json={
+                    'title': category_name,
+                    'type': 'checkboxes'
+                }
+            )
 
-		category_id = response.json().get('id')
+        category_id = response.json().get('id')
 
-		# create an interest in that category
-		interest_name = self._get_guid()		
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
-				auth=('apikey', self.api_key),
-				json={
-					'name': interest_name,
-					'display_order': 1,
-				}
-			)
+        # create an interest in that category
+        interest_name = self._get_guid()
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
+                    self.subdomain, new_list['id'], category_id),
+                auth=('apikey', self.api_key),
+                json={
+                    'name': interest_name,
+                    'display_order': 1,
+                }
+            )
 
-		self.assertEqual(response.status_code, 200)
-		# self.assertEqual(response.json().get('name'), interest_name)
-		self.assertIsNotNone(response.json().get('name'))
+        self.assertEqual(response.status_code, 200)
+        # self.assertEqual(response.json().get('name'), interest_name)
+        self.assertIsNotNone(response.json().get('name'))
 
-	def test_can_get_a_specific_interest(self):
+    def test_can_get_a_specific_interest(self):
 
-		with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
-			# create the list
-			new_list = self._api_create_new_list()
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            # create the list
+            new_list = self._api_create_new_list()
 
-		with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-			# create the category
-			category_name = self._get_guid()
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, new_list['id']),
-				auth=('apikey', self.api_key),
-				json={
-					'title': category_name,
-					'type': 'checkboxes'
-				}
-			)
+        with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
+            # create the category
+            category_name = self._get_guid()
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                    self.subdomain, new_list['id']),
+                auth=('apikey', self.api_key),
+                json={
+                    'title': category_name,
+                    'type': 'checkboxes'
+                }
+            )
 
-		category_id = response.json().get('id')
+        category_id = response.json().get('id')
 
-		with self.recorder.use_cassette('{}_arrange_interest'.format(self.id())):
-			# create an interest in that category
-			interest_name = self._get_guid()
+        with self.recorder.use_cassette('{}_arrange_interest'.format(self.id())):
+            # create an interest in that category
+            interest_name = self._get_guid()
 
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
-				auth=('apikey', self.api_key),
-				json={
-					'name': interest_name,
-					'display_order': 1,
-				}
-			)
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
+                    self.subdomain, new_list['id'], category_id),
+                auth=('apikey', self.api_key),
+                json={
+                    'name': interest_name,
+                    'display_order': 1,
+                }
+            )
 
-		interest_id = response.json().get('id')		
+        interest_id = response.json().get('id')
 
-		# retrieve that interest
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.get(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests/{}'.format(self.subdomain, new_list['id'], category_id, interest_id),
-				auth=('apikey', self.api_key)
-			)
+        # retrieve that interest
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.get(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests/{}'.format(
+                    self.subdomain, new_list['id'], category_id, interest_id),
+                auth=('apikey', self.api_key)
+            )
 
-		self.assertEqual(response.status_code, 200)
-		# self.assertEqual(response.json().get('name'), interest_name)
-		self.assertIsNotNone(response.json().get('name'))
-		# self.assertEqual(response.json().get('id'), interest_id)		
-		self.assertIsNotNone(response.json().get('id'))
+        self.assertEqual(response.status_code, 200)
+        # self.assertEqual(response.json().get('name'), interest_name)
+        self.assertIsNotNone(response.json().get('name'))
+        # self.assertEqual(response.json().get('id'), interest_id)
+        self.assertIsNotNone(response.json().get('id'))
 
+    def test_get_all_interests_of_category_with_interests(self):
 
-	def test_get_all_interests_of_category_with_interests(self):
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            # create the list
+            new_list = self._api_create_new_list()
 
-		with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
-			# create the list
-			new_list = self._api_create_new_list()
+        with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
+            # create the category
+            category_name = self._get_guid()
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                    self.subdomain, new_list['id']),
+                auth=('apikey', self.api_key),
+                json={
+                    'title': category_name,
+                    'type': 'checkboxes'
+                }
+            )
 
-		with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-			# create the category
-			category_name = self._get_guid()
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(self.subdomain, new_list['id']),
-				auth=('apikey', self.api_key),
-				json={
-					'title': category_name,
-					'type': 'checkboxes'
-				}
-			)
+            category_id = response.json().get('id')
 
-			category_id = response.json().get('id')
+            # create two interests in that category
+            interest_one_name = self._get_guid()
+            interest_two_name = self._get_guid()
 
-			# create two interests in that category
-			interest_one_name = self._get_guid()
-			interest_two_name = self._get_guid()
+        with self.recorder.use_cassette('{}_arrange_interest_one'.format(self.id())):
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
+                    self.subdomain, new_list['id'], category_id),
+                auth=('apikey', self.api_key),
+                json={
+                    'name': interest_one_name,
+                    'display_order': 1,
+                }
+            )
+            interest_one_id = response.json().get('id')
 
-		with self.recorder.use_cassette('{}_arrange_interest_one'.format(self.id())):
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
-				auth=('apikey', self.api_key),
-				json={
-					'name': interest_one_name,
-					'display_order': 1,
-				}
-			)
-			interest_one_id = response.json().get('id')	
+        with self.recorder.use_cassette('{}_arrange_interest_two'.format(self.id())):
+            response = self.session.post(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
+                    self.subdomain, new_list['id'], category_id),
+                auth=('apikey', self.api_key),
+                json={
+                    'name': interest_two_name,
+                    'display_order': 1,
+                }
+            )
+            interest_two_id = response.json().get('id')
 
-		with self.recorder.use_cassette('{}_arrange_interest_two'.format(self.id())):
-			response = self.session.post(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
-				auth=('apikey', self.api_key),
-				json={
-					'name': interest_two_name,
-					'display_order': 1,
-				}
-			)
-			interest_two_id = response.json().get('id')
+        # get all interests of category (should be two)
+        with self.recorder.use_cassette(self.id()):
+            response = self.session.get(
+                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
+                    self.subdomain, new_list['id'], category_id),
+                auth=('apikey', self.api_key)
+            )
 
-		# get all interests of category (should be two)
-		with self.recorder.use_cassette(self.id()):
-			response = self.session.get(
-				'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(self.subdomain, new_list['id'], category_id),
-				auth=('apikey', self.api_key)
-			)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json().get('total_items'), 2)
+        self.assertEqual(len(response.json().get('interests')), 2)
+        # self.assertEqual(response.json().get('interests')[0].get('name'), interest_one_name)
+        # self.assertEqual(response.json().get('interests')[0].get('id'), interest_one_id)
+        # self.assertEqual(response.json().get('interests')[1].get('name'), interest_two_name)
+        # self.assertEqual(response.json().get('interests')[1].get('id'), interest_two_id)
 
-		self.assertEqual(response.status_code, 200)
-		self.assertEqual(response.json().get('total_items'), 2)
-		self.assertEqual(len(response.json().get('interests')), 2)
-		# self.assertEqual(response.json().get('interests')[0].get('name'), interest_one_name)
-		# self.assertEqual(response.json().get('interests')[0].get('id'), interest_one_id)
-		# self.assertEqual(response.json().get('interests')[1].get('name'), interest_two_name)
-		# self.assertEqual(response.json().get('interests')[1].get('id'), interest_two_id)
-
-
-		# print(response.status_code)
-		# print(pformat(response.json()))
+        # print(response.status_code)
+        # print(pformat(response.json()))

@@ -2,83 +2,87 @@ import os
 import requests
 import hashlib
 
+
 class MailChimpClient(object):
 
-	def __init__(self, api_key):
+    def __init__(self, api_key):
 
-		self.api_key = api_key
+        self.api_key = api_key
 
-		# the subdomain to use in the api url
-		# is always the last 3 characters of the api key
-		self.subdomain = self.api_key[-3:]
+        # the subdomain to use in the api url
+        # is always the last 3 characters of the api key
+        self.subdomain = self.api_key[-3:]
 
-		# set up a session for requests to be made in
-		self.session = requests.Session()
+        # set up a session for requests to be made in
+        self.session = requests.Session()
 
-	def get_md5(self, string):
+    def get_md5(self, string):
 
-		hashobject = hashlib.md5(string.encode())
-		md5 = hashobject.hexdigest()
-		return md5
+        hashobject = hashlib.md5(string.encode())
+        md5 = hashobject.hexdigest()
+        return md5
 
-	def get_api_root(self):
+    def get_api_root(self):
 
-		response = self.session.get(
-			'https://{}.api.mailchimp.com/3.0/'.format(self.subdomain),
-			auth=('apikey', self.api_key)
-		)
+        response = self.session.get(
+            'https://{}.api.mailchimp.com/3.0/'.format(self.subdomain),
+            auth=('apikey', self.api_key)
+        )
 
-		return response
+        return response
 
-	def check_subscription_status(self, email, list_id):
+    def check_subscription_status(self, email, list_id):
 
-		email_md5 = self.get_md5(email)
+        email_md5 = self.get_md5(email)
 
-		response = self.session.get(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, list_id, email_md5),
-			auth=('apikey', self.api_key)
-		)
+        response = self.session.get(
+            'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
+                self.subdomain, list_id, email_md5),
+            auth=('apikey', self.api_key)
+        )
 
-		if response.status_code == 404:
-			subscribed = False
-		elif response.status_code == 200:
-			subscribed = True
-		else:
-			subscribed = None
+        if response.status_code == 404:
+            subscribed = False
+        elif response.status_code == 200:
+            subscribed = True
+        else:
+            subscribed = None
 
-		return subscribed
+        return subscribed
 
-	def subscribe_email_to_list(self, email, list_id):
+    def subscribe_email_to_list(self, email, list_id):
 
-		response = self.session.post(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(self.subdomain, list_id),
-			auth=('apikey', self.api_key),
-			json={'email_address': email, 'status': 'subscribed'}
-		)
+        response = self.session.post(
+            'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(
+                self.subdomain, list_id),
+            auth=('apikey', self.api_key),
+            json={'email_address': email, 'status': 'subscribed'}
+        )
 
-		if response.status_code == 200:
-			success = True
-		elif response.status_code == 400:
-			success = False
-		else:
-			success = None
+        if response.status_code == 200:
+            success = True
+        elif response.status_code == 400:
+            success = False
+        else:
+            success = None
 
-		return success
+        return success
 
-	def unsubscribe_email_from_list(self, email, list_id):
+    def unsubscribe_email_from_list(self, email, list_id):
 
-		email_md5 = self.get_md5(email)
-		response = self.session.patch(
-			'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(self.subdomain, list_id, email_md5),
-			auth=('apikey', self.api_key),
-			json={'status': 'unsubscribed'}
-		)
+        email_md5 = self.get_md5(email)
+        response = self.session.patch(
+            'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
+                self.subdomain, list_id, email_md5),
+            auth=('apikey', self.api_key),
+            json={'status': 'unsubscribed'}
+        )
 
-		if response.status_code == 200:
-			success = True
-		elif response.status_code == 404:
-			success = None
-		else:
-			success = False
+        if response.status_code == 200:
+            success = True
+        elif response.status_code == 404:
+            success = None
+        else:
+            success = False
 
-		return success
+        return success

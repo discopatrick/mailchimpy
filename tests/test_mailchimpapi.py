@@ -7,6 +7,20 @@ from pprint import pformat
 from .basemailchimptest import BaseMailChimpTest, BaseMailChimpAPITest
 from . import config
 
+# It would be helpful in these tests to be able to test specific values, e.g.:
+# 
+# self.assertEqual(new_list['response'].json().get('name'), list_name)
+# 
+# However, because we are using betamax, and playing back previously recorded
+# http interactions, the responses we receive are not going to be the exact 
+# response of the request we just sent. As such, we are only testing those
+# values of which we can be sure of the responses, e.g.:
+# 
+# self.assertEqual(new_list['response'].status_code, 200)
+# self.assertIsNotNone(new_list['response'].json().get('id'))
+# 
+# Some assertions are left commented below, rather than removed, in case we
+# can fix this problem in future.
 
 class ListsAPITest(BaseMailChimpAPITest):
 
@@ -23,8 +37,6 @@ class ListsAPITest(BaseMailChimpAPITest):
         self.assertIsNotNone(response.json().get('lists'))
 
     def test_creating_a_list(self):
-
-        list_name = self._get_guid()
 
         with self.recorder.use_cassette(self.id()):
             new_list = self._api_create_new_list()

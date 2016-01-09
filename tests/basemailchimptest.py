@@ -141,6 +141,23 @@ class BaseMailChimpTest(TestCase):
             'response': response
         }
 
+    def _api_create_interest_category(self, list_id, category_type='checkboxes'):
+
+        response = self.session.post(
+            'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
+                self.subdomain, self.list_id),
+            auth=('apikey', self.api_key),
+            json={
+                'title': self._get_guid(),
+                'type': category_type
+            }
+        )
+
+        return {
+            'id': response.json().get('id'),
+            'name': response.json().get('name'),
+            'response': response
+        }
 
 class BaseMailChimpAPITest(BaseMailChimpTest):
 

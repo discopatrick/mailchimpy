@@ -230,59 +230,30 @@ class InterestCategoriesAPITest(BaseMailChimpAPITest):
     def test_create_interest_category_in_list(self):
 
         with self.recorder.use_cassette(self.id()):
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
-                    self.subdomain, self.list_id),
-                auth=('apikey', self.api_key),
-                json={
-                    'title': self._get_guid(),
-                    'type': 'checkboxes'
-                }
-            )
+            new_category = self._api_create_interest_category(self.list_id)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIsNotNone(response.json().get('id'))
+        self.assertEqual(new_category['response'].status_code, 200)
+        self.assertIsNotNone(new_category['response'].json().get('id'))
 
     def test_create_interest_category_of_each_type_in_list(self):
 
-        for interest_type in ('checkboxes', 'dropdown', 'radio', 'hidden'):
-            with self.recorder.use_cassette('{}_{}'.format(self.id(), interest_type)):
-                response = self.session.post(
-                    'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
-                        self.subdomain, self.list_id),
-                    auth=('apikey', self.api_key),
-                    json={
-                        'title': self._get_guid(),
-                        'type': interest_type
-                    }
-                )
+        for category_type in ('checkboxes', 'dropdown', 'radio', 'hidden'):
+            with self.recorder.use_cassette('{}_{}'.format(self.id(), category_type)):
+                new_category = self._api_create_interest_category(self.list_id, category_type)
 
-                self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.json().get('type'), interest_type)
+                self.assertEqual(new_category['response'].status_code, 200)
+                self.assertEqual(new_category['response'].json().get('type'), category_type)
 
     def test_get_specific_interest_category(self):
 
-        # create the category
-        category_name = self._get_guid()
-
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
-                    self.subdomain, self.list_id),
-                auth=('apikey', self.api_key),
-                json={
-                    'title': category_name,
-                    'type': 'checkboxes'
-                }
-            )
-
-        category_id = response.json().get('id')
+            new_category = self._api_create_interest_category(self.list_id)
 
         # retrieve that category
         with self.recorder.use_cassette(self.id()):
             response = self.session.get(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}'.format(
-                    self.subdomain, self.list_id, category_id),
+                    self.subdomain, self.list_id, new_category['id']),
                 auth=('apikey', self.api_key)
             )
 
@@ -305,25 +276,13 @@ class InterestsAPITest(BaseMailChimpAPITest):
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-            # create the category
-            category_name = self._get_guid()
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
-                    self.subdomain, new_list['id']),
-                auth=('apikey', self.api_key),
-                json={
-                    'title': category_name,
-                    'type': 'checkboxes'
-                }
-            )
-
-        category_id = response.json().get('id')
+            new_category = self._api_create_interest_category(self.list_id)
 
         # get all the interests of that category (should be none)
         with self.recorder.use_cassette(self.id()):
             response = self.session.get(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], category_id),
+                    self.subdomain, new_list['id'], new_category['id']),
                 auth=('apikey', self.api_key)
             )
 
@@ -341,26 +300,14 @@ class InterestsAPITest(BaseMailChimpAPITest):
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-            # create the category
-            category_name = self._get_guid()
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
-                    self.subdomain, new_list['id']),
-                auth=('apikey', self.api_key),
-                json={
-                    'title': category_name,
-                    'type': 'checkboxes'
-                }
-            )
-
-        category_id = response.json().get('id')
+            new_category = self._api_create_interest_category(self.list_id)
 
         # create an interest in that category
         interest_name = self._get_guid()
         with self.recorder.use_cassette(self.id()):
             response = self.session.post(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], category_id),
+                    self.subdomain, new_list['id'], new_category['id']),
                 auth=('apikey', self.api_key),
                 json={
                     'name': interest_name,
@@ -382,19 +329,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-            # create the category
-            category_name = self._get_guid()
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
-                    self.subdomain, new_list['id']),
-                auth=('apikey', self.api_key),
-                json={
-                    'title': category_name,
-                    'type': 'checkboxes'
-                }
-            )
-
-        category_id = response.json().get('id')
+            new_category = self._api_create_interest_category(self.list_id)
 
         with self.recorder.use_cassette('{}_arrange_interest'.format(self.id())):
             # create an interest in that category
@@ -402,7 +337,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
 
             response = self.session.post(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], category_id),
+                    self.subdomain, new_list['id'], new_category['id']),
                 auth=('apikey', self.api_key),
                 json={
                     'name': interest_name,
@@ -416,7 +351,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette(self.id()):
             response = self.session.get(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests/{}'.format(
-                    self.subdomain, new_list['id'], category_id, interest_id),
+                    self.subdomain, new_list['id'], new_category['id'], interest_id),
                 auth=('apikey', self.api_key)
             )
 
@@ -436,19 +371,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-            # create the category
-            category_name = self._get_guid()
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
-                    self.subdomain, new_list['id']),
-                auth=('apikey', self.api_key),
-                json={
-                    'title': category_name,
-                    'type': 'checkboxes'
-                }
-            )
-
-            category_id = response.json().get('id')
+            new_category = self._api_create_interest_category(self.list_id)
 
             # create two interests in that category
             interest_one_name = self._get_guid()
@@ -457,7 +380,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette('{}_arrange_interest_one'.format(self.id())):
             response = self.session.post(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], category_id),
+                    self.subdomain, new_list['id'], new_category['id']),
                 auth=('apikey', self.api_key),
                 json={
                     'name': interest_one_name,
@@ -469,7 +392,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette('{}_arrange_interest_two'.format(self.id())):
             response = self.session.post(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], category_id),
+                    self.subdomain, new_list['id'], new_category['id']),
                 auth=('apikey', self.api_key),
                 json={
                     'name': interest_two_name,
@@ -482,7 +405,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette(self.id()):
             response = self.session.get(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], category_id),
+                    self.subdomain, new_list['id'], new_category['id']),
                 auth=('apikey', self.api_key)
             )
 

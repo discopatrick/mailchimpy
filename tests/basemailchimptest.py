@@ -98,7 +98,26 @@ class BaseMailChimpTest(TestCase):
             'title': response.json().get('title'),
             'status_code': response.status_code,
             'response': response
-        }        
+        }
+
+    def _api_get_member(self, list_id, email=None):
+
+        if email is None:
+            email = self._get_fresh_email()
+
+        email_md5 = self._get_md5(email)
+
+        response = self.session.get(
+            'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
+                self.subdomain, list_id, email_md5),
+            auth=('apikey', self.api_key)
+        )
+
+        return {
+            'status': response.json().get('status'),
+            'status_code': response.status_code,
+            'response': response
+        }
 
     def _api_create_new_list(self, list_name=None):
 

@@ -97,17 +97,10 @@ class MembersAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
             new_list = self._api_create_new_list()
 
-        email = self._get_fresh_email()
-        email_md5 = self._get_md5(email)
-
         with self.recorder.use_cassette(self.id()):
-            response = self.session.get(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
-                    self.subdomain, new_list['id'], email_md5),
-                auth=('apikey', self.api_key)
-            )
+            member = self._api_get_member(new_list['id'])
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(member['status_code'], 404)
 
         with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
             self._api_delete_list(new_list['id'])

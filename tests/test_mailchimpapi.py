@@ -94,68 +94,74 @@ class MembersAPITest(BaseMailChimpAPITest):
 
     def test_can_check_if_email_address_is_subscribed_to_list(self):
 
+        with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+            new_list = self._api_create_new_list()
+
         email = self._get_fresh_email()
         email_md5 = self._get_md5(email)
 
         with self.recorder.use_cassette(self.id()):
             response = self.session.get(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
-                    self.subdomain, self.list_id, email_md5),
+                    self.subdomain, new_list['id'], email_md5),
                 auth=('apikey', self.api_key)
             )
 
         self.assertEqual(response.status_code, 404)
 
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
+
     def test_can_subscribe_a_new_email_to_list(self):
+
+        with self.recorder.use_cassette('{}_arrange'.format(self.id())):
+            new_list = self._api_create_new_list()
 
         email = self._get_fresh_email()
 
         with self.recorder.use_cassette(self.id()):
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(
-                    self.subdomain, self.list_id),
-                auth=('apikey', self.api_key),
-                json={'email_address': email, 'status': 'subscribed'}
-            )
+            new_subscription = self._api_subscribe_email_to_list(email, new_list['id'])
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json().get('status'), 'subscribed')
+        self.assertEqual(new_subscription['response'].status_code, 200)
+        self.assertEqual(new_subscription['status'], 'subscribed')
+
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
 
     def test_subscribing_an_email_that_is_already_subscribed(self):
 
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            new_list = self._api_create_new_list()
+
         email = self._get_fresh_email()
 
-        # subscribe an email address to the list
-        with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-            self._api_subscribe_email_to_list(email, self.list_id)
+        with self.recorder.use_cassette('{}_arrange_subscription'.format(self.id())):
+            self._api_subscribe_email_to_list(email, new_list['id'])
 
-        # attempt to subscribe that same email address again
         with self.recorder.use_cassette(self.id()):
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(
-                    self.subdomain, self.list_id),
-                auth=('apikey', self.api_key),
-                json={'email_address': email, 'status': 'subscribed'}
-            )
+            resubscription_attempt = self._api_subscribe_email_to_list(email, new_list['id'])
 
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json().get('title'), 'Member Exists')
+        self.assertEqual(resubscription_attempt['response'].status_code, 400)
+        self.assertEqual(resubscription_attempt['title'], 'Member Exists')
+
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
 
     def test_subscribing_a_known_disallowed_email(self):
+
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            new_list = self._api_create_new_list()
 
         known_disallowed_email = 'anything@example.com'
 
         with self.recorder.use_cassette(self.id()):
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/members'.format(
-                    self.subdomain, self.list_id),
-                auth=('apikey', self.api_key),
-                json={'email_address': known_disallowed_email,
-                      'status': 'subscribed'}
-            )
+            subscription = self._api_subscribe_email_to_list(known_disallowed_email, new_list['id'])
 
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json().get('title'), 'Invalid Resource')
+        self.assertEqual(subscription['response'].status_code, 400)
+        self.assertEqual(subscription['title'], 'Invalid Resource')
+
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
 
     def test_unsubscribing_an_email(self):
 

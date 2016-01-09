@@ -93,6 +93,12 @@ class BaseMailChimpTest(TestCase):
             json={'email_address': email, 'status': 'subscribed'}
         )
 
+        return {
+            'status': response.json().get('status'),
+            'title': response.json().get('title'),
+            'response': response
+        }        
+
     def _api_create_new_list(self, list_name=None):
 
         if not list_name:

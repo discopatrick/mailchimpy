@@ -159,6 +159,20 @@ class BaseMailChimpTest(TestCase):
             'response': response
         }
 
+    def _api_get_interests(self, list_id, category_id):
+        
+        response = self.session.get(
+            'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
+                self.subdomain, list_id, category_id),
+            auth=('apikey', self.api_key)
+        )
+
+        return {
+            'total_items': response.json().get('total_items'),
+            'interests': response.json().get('interests'),
+            'response': response
+        }
+
     def _api_create_interest(self, list_id, category_id, interest_name=None):
 
         if interest_name is None:

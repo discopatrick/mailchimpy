@@ -279,15 +279,11 @@ class InterestsAPITest(BaseMailChimpAPITest):
 
         # get all the interests of the category (should be none)
         with self.recorder.use_cassette(self.id()):
-            response = self.session.get(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], new_category['id']),
-                auth=('apikey', self.api_key)
-            )
+            interests = self._api_get_interests(new_list['id'], new_category['id'])
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json().get('interests'), [])
-        self.assertEqual(response.json().get('total_items'), 0)
+        self.assertEqual(interests['response'].status_code, 200)
+        self.assertEqual(interests['interests'], [])
+        self.assertEqual(interests['total_items'], 0)
 
         with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
             self._api_delete_list(new_list['id'])
@@ -355,15 +351,11 @@ class InterestsAPITest(BaseMailChimpAPITest):
 
         # get all interests of category (should be two)
         with self.recorder.use_cassette(self.id()):
-            response = self.session.get(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], new_category['id']),
-                auth=('apikey', self.api_key)
-            )
+            interests = self._api_get_interests(new_list['id'], new_category['id'])
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json().get('total_items'), 2)
-        self.assertEqual(len(response.json().get('interests')), 2)
+        self.assertEqual(interests['response'].status_code, 200)
+        self.assertEqual(interests['total_items'], 2)
+        self.assertEqual(len(interests['interests']), 2)
         # self.assertEqual(response.json().get('interests')[0].get('name'), interest_one_name)
         # self.assertEqual(response.json().get('interests')[0].get('id'), interest_one_id)
         # self.assertEqual(response.json().get('interests')[1].get('name'), interest_two_name)

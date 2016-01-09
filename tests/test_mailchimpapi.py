@@ -27,35 +27,12 @@ class ListsAPITest(BaseMailChimpAPITest):
         list_name = self._get_guid()
 
         with self.recorder.use_cassette(self.id()):
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists'.format(
-                    self.subdomain),
-                auth=('apikey', self.api_key),
-                json={
-                    'name': list_name,
-                    'contact': {
-                        'company': 'company',
-                        'address1': 'address1',
-                        'city': 'city',
-                        'state': 'state',
-                        'zip': 'zip',
-                        'country': 'country'
-                    },
-                    'permission_reminder': 'permission reminder',
-                    'campaign_defaults': {
-                        'from_name': 'from name',
-                        'from_email': self._get_fresh_email(),
-                        'subject': 'subject',
-                        'language': 'language'
-                    },
-                    'email_type_option': False
-                }
-            )
+            new_list = self._api_create_new_list()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIsNotNone(response.json().get('id'))
+        self.assertEqual(new_list['response'].status_code, 200)
+        self.assertIsNotNone(new_list['response'].json().get('id'))
         # self.assertEqual(response.json().get('name'), list_name)
-        self.assertIsNotNone(response.json().get('name'))
+        self.assertIsNotNone(new_list['response'].json().get('name'))
 
     def test_getting_a_specific_list(self):
 

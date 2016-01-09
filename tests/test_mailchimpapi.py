@@ -272,13 +272,12 @@ class InterestsAPITest(BaseMailChimpAPITest):
     def test_get_all_interests_of_empty_category(self):
 
         with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
-            # create the list
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
             new_category = self._api_create_interest_category(self.list_id)
 
-        # get all the interests of that category (should be none)
+        # get all the interests of the category (should be none)
         with self.recorder.use_cassette(self.id()):
             response = self.session.get(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
@@ -296,28 +295,17 @@ class InterestsAPITest(BaseMailChimpAPITest):
     def test_can_create_an_interest_in_a_category(self):
 
         with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
-            # create the list
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
             new_category = self._api_create_interest_category(self.list_id)
 
-        # create an interest in that category
-        interest_name = self._get_guid()
         with self.recorder.use_cassette(self.id()):
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], new_category['id']),
-                auth=('apikey', self.api_key),
-                json={
-                    'name': interest_name,
-                    'display_order': 1,
-                }
-            )
+            new_interest = self._api_create_interest(new_list['id'], new_category['id'])
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(new_interest['response'].status_code, 200)
         # self.assertEqual(response.json().get('name'), interest_name)
-        self.assertIsNotNone(response.json().get('name'))
+        self.assertIsNotNone(new_interest['response'].json().get('name'))
 
         with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
             self._api_delete_list(new_list['id'])
@@ -325,33 +313,19 @@ class InterestsAPITest(BaseMailChimpAPITest):
     def test_can_get_a_specific_interest(self):
 
         with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
-            # create the list
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
             new_category = self._api_create_interest_category(self.list_id)
 
         with self.recorder.use_cassette('{}_arrange_interest'.format(self.id())):
-            # create an interest in that category
-            interest_name = self._get_guid()
+            new_interest = self._api_create_interest(new_list['id'], new_category['id'])
 
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], new_category['id']),
-                auth=('apikey', self.api_key),
-                json={
-                    'name': interest_name,
-                    'display_order': 1,
-                }
-            )
-
-        interest_id = response.json().get('id')
-
-        # retrieve that interest
+        # retrieve the interest
         with self.recorder.use_cassette(self.id()):
             response = self.session.get(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests/{}'.format(
-                    self.subdomain, new_list['id'], new_category['id'], interest_id),
+                    self.subdomain, new_list['id'], new_category['id'], new_interest['id']),
                 auth=('apikey', self.api_key)
             )
 
@@ -367,39 +341,17 @@ class InterestsAPITest(BaseMailChimpAPITest):
     def test_get_all_interests_of_category_with_interests(self):
 
         with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
-            # create the list
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
             new_category = self._api_create_interest_category(self.list_id)
 
-            # create two interests in that category
-            interest_one_name = self._get_guid()
-            interest_two_name = self._get_guid()
-
+        # create two interests in the category
         with self.recorder.use_cassette('{}_arrange_interest_one'.format(self.id())):
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], new_category['id']),
-                auth=('apikey', self.api_key),
-                json={
-                    'name': interest_one_name,
-                    'display_order': 1,
-                }
-            )
-            interest_one_id = response.json().get('id')
+            new_interest_one = self._api_create_interest(new_list['id'], new_category['id'])
 
         with self.recorder.use_cassette('{}_arrange_interest_two'.format(self.id())):
-            response = self.session.post(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}/interests'.format(
-                    self.subdomain, new_list['id'], new_category['id']),
-                auth=('apikey', self.api_key),
-                json={
-                    'name': interest_two_name,
-                    'display_order': 1,
-                }
-            )
-            interest_two_id = response.json().get('id')
+            new_interest_two = self._api_create_interest(new_list['id'], new_category['id'])
 
         # get all interests of category (should be two)
         with self.recorder.use_cassette(self.id()):

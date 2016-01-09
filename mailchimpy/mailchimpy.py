@@ -89,7 +89,7 @@ class MailChimpClient(object):
         return success
 
     def create_interest_category(self, category_name, list_id):
-        
+
         response = self.session.post(
             'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
                 self.subdomain, list_id),
@@ -113,4 +113,4 @@ class MailChimpClient(object):
         if response.status_code == 200:
             success = True
 
-        return success        
+        return success

@@ -22,8 +22,6 @@ class MailChimpClientTest(BaseMailChimpClientTest):
 
         email = self._get_fresh_email()
 
-        # matchers = ['uri', 'method', 'headers', 'body']
-        # , match_requests_on=matchers):
         with self.recorder.use_cassette(self.id()):
             subscribed = self.mc.check_subscription_status(email, self.list_id)
 
@@ -120,7 +118,8 @@ class MailChimpClientTest(BaseMailChimpClientTest):
         category_name = self._get_guid()
 
         with self.recorder.use_cassette(self.id()):
-            success = self.mc.create_interest_category(category_name, self.list_id)
+            success = self.mc.create_interest_category(
+                category_name, self.list_id)
 
         self.assertTrue(success)
 

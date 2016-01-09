@@ -91,6 +91,7 @@ class ListsAPITest(BaseMailChimpAPITest):
         self.assertEqual(result['response'].content, b'')
         self.assertEqual(result['response'].status_code, 204)
 
+
 class MembersAPITest(BaseMailChimpAPITest):
 
     def get_md5(self, string):
@@ -363,7 +364,6 @@ class InterestsAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
             self._api_delete_list(new_list['id'])
 
-
     def test_can_create_an_interest_in_a_category(self):
 
         with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
@@ -404,7 +404,6 @@ class InterestsAPITest(BaseMailChimpAPITest):
 
         with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
             self._api_delete_list(new_list['id'])
-
 
     def test_can_get_a_specific_interest(self):
 
@@ -459,7 +458,6 @@ class InterestsAPITest(BaseMailChimpAPITest):
 
         with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
             self._api_delete_list(new_list['id'])
-
 
     def test_get_all_interests_of_category_with_interests(self):
 
@@ -525,7 +523,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
         # self.assertEqual(response.json().get('interests')[0].get('id'), interest_one_id)
         # self.assertEqual(response.json().get('interests')[1].get('name'), interest_two_name)
         # self.assertEqual(response.json().get('interests')[1].get('id'), interest_two_id)
-        
+
         with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
             self._api_delete_list(new_list['id'])
 

@@ -103,6 +103,24 @@ class BaseMailChimpTest(TestCase):
             'response': response
         }
 
+    def _api_unsubscribe_email_from_list(self, list_id, email):
+
+        email_md5 = self._get_md5(email)
+
+        response = self.session.patch(
+            'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
+                self.subdomain, list_id, email_md5),
+            auth=('apikey', self.api_key),
+            json={'status': 'unsubscribed'}
+        )
+
+        return {
+            'status': response.json().get('status'),
+            'title': response.json().get('title'),
+            'status_code': response.status_code,
+            'response': response
+        }
+
     def _api_get_member(self, list_id, email=None):
 
         if email is None:

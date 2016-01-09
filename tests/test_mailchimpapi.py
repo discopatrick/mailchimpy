@@ -160,23 +160,14 @@ class MembersAPITest(BaseMailChimpAPITest):
 
         email = self._get_fresh_email()
 
-        # subscribe an email address to the list
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
             self._api_subscribe_email_to_list(self.list_id, email)
 
-        email_md5 = self._get_md5(email)
-
-        # unsubscribe that same email address from the list
         with self.recorder.use_cassette(self.id()):
-            response = self.session.patch(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
-                    self.subdomain, self.list_id, email_md5),
-                auth=('apikey', self.api_key),
-                json={'status': 'unsubscribed'}
-            )
+            unsubscription = self._api_unsubscribe_email_from_list(self.list_id, email)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json().get('status'), 'unsubscribed')
+        self.assertEqual(unsubscription['status_code'], 200)
+        self.assertEqual(unsubscription['status'], 'unsubscribed')
 
     def test_unsubscribing_an_email_that_is_already_unsubscribed(self):
 
@@ -187,41 +178,24 @@ class MembersAPITest(BaseMailChimpAPITest):
             self._api_subscribe_email_to_list(self.list_id, email)
 
             # unsubscribe that same email address from the list
-            email_md5 = self._get_md5(email)
-            response = self.session.patch(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
-                    self.subdomain, self.list_id, email_md5),
-                auth=('apikey', self.api_key),
-                json={'status': 'unsubscribed'}
-            )
+            self._api_unsubscribe_email_from_list(self.list_id, email)
 
         # attempt to unsubscribe again
         with self.recorder.use_cassette(self.id()):
-            response = self.session.patch(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
-                    self.subdomain, self.list_id, email_md5),
-                auth=('apikey', self.api_key),
-                json={'status': 'unsubscribed'}
-            )
+            unsub_attempt_two = self._api_unsubscribe_email_from_list(self.list_id, email)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json().get('status'), 'unsubscribed')
+        self.assertEqual(unsub_attempt_two['status_code'], 200)
+        self.assertEqual(unsub_attempt_two['status'], 'unsubscribed')
 
     def test_unsubscribing_an_email_that_has_never_existed_in_the_list(self):
 
         email = self._get_fresh_email()
-        email_md5 = self._get_md5(email)
 
         with self.recorder.use_cassette(self.id()):
-            response = self.session.patch(
-                'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
-                    self.subdomain, self.list_id, email_md5),
-                auth=('apikey', self.api_key),
-                json={'status': 'unsubscribed'}
-            )
+            unsubscription = self._api_unsubscribe_email_from_list(self.list_id, email)
 
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json().get('title'), 'Resource Not Found')
+        self.assertEqual(unsubscription['status_code'], 404)
+        self.assertEqual(unsubscription['title'], 'Resource Not Found')
 
 
 class InterestCategoriesAPITest(BaseMailChimpAPITest):

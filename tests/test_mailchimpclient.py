@@ -4,9 +4,29 @@ from uuid import uuid4
 import requests
 from betamax import Betamax
 
-from .basemailchimptest import BaseMailChimpClientTest
+from .basemailchimptest import BaseMailChimpTest
 from mailchimpy.mailchimpy import MailChimpClient
 from . import config
+
+
+class BaseMailChimpClientTest(BaseMailChimpTest):
+
+    cassette_dir = 'cassettes/client'
+
+    @classmethod
+    def setUpClass(cls):
+
+        super(BaseMailChimpClientTest, cls).setUpClass()
+
+        cls.mc = MailChimpClient(cls.api_key)
+
+        # override the default requests session, using instead the
+        # MailChimpClient's session
+        cls.session = cls.mc.session
+
+        # not sure if this is necessary, may be taken care of by
+        # passed-by-ref variables
+        cls.recorder = Betamax(cls.session)
 
 
 class MailChimpClientTest(BaseMailChimpClientTest):

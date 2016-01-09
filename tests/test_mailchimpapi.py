@@ -4,7 +4,7 @@ import requests
 from uuid import uuid4
 from pprint import pformat
 
-from .basemailchimptest import BaseMailChimpTest, BaseMailChimpAPITest
+from .basemailchimptest import BaseMailChimpTest
 from . import config
 
 # It would be helpful in these tests to be able to test specific values, e.g.:
@@ -21,6 +21,13 @@ from . import config
 # 
 # Some assertions are left commented below, rather than removed, in case we
 # can fix this problem in future.
+
+
+
+class BaseMailChimpAPITest(BaseMailChimpTest):
+
+    cassette_dir = 'cassettes/api'
+
 
 class ListsAPITest(BaseMailChimpAPITest):
 

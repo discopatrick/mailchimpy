@@ -113,7 +113,7 @@ class MembersAPITest(BaseMailChimpAPITest):
         email = self._get_fresh_email()
 
         with self.recorder.use_cassette(self.id()):
-            new_subscription = self._api_subscribe_email_to_list(email, new_list['id'])
+            new_subscription = self._api_subscribe_email_to_list(new_list['id'])
 
         self.assertEqual(new_subscription['status_code'], 200)
         self.assertEqual(new_subscription['status'], 'subscribed')
@@ -129,10 +129,10 @@ class MembersAPITest(BaseMailChimpAPITest):
         email = self._get_fresh_email()
 
         with self.recorder.use_cassette('{}_arrange_subscription'.format(self.id())):
-            self._api_subscribe_email_to_list(email, new_list['id'])
+            self._api_subscribe_email_to_list(new_list['id'], email)
 
         with self.recorder.use_cassette(self.id()):
-            resubscription_attempt = self._api_subscribe_email_to_list(email, new_list['id'])
+            resubscription_attempt = self._api_subscribe_email_to_list(new_list['id'], email)
 
         self.assertEqual(resubscription_attempt['status_code'], 400)
         self.assertEqual(resubscription_attempt['title'], 'Member Exists')
@@ -148,7 +148,7 @@ class MembersAPITest(BaseMailChimpAPITest):
         known_disallowed_email = 'anything@example.com'
 
         with self.recorder.use_cassette(self.id()):
-            subscription = self._api_subscribe_email_to_list(known_disallowed_email, new_list['id'])
+            subscription = self._api_subscribe_email_to_list(new_list['id'], known_disallowed_email)
 
         self.assertEqual(subscription['status_code'], 400)
         self.assertEqual(subscription['title'], 'Invalid Resource')
@@ -162,7 +162,7 @@ class MembersAPITest(BaseMailChimpAPITest):
 
         # subscribe an email address to the list
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-            self._api_subscribe_email_to_list(email, self.list_id)
+            self._api_subscribe_email_to_list(self.list_id, email)
 
         email_md5 = self._get_md5(email)
 
@@ -184,7 +184,7 @@ class MembersAPITest(BaseMailChimpAPITest):
 
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
             # subscribe an email address to the list
-            self._api_subscribe_email_to_list(email, self.list_id)
+            self._api_subscribe_email_to_list(self.list_id, email)
 
             # unsubscribe that same email address from the list
             email_md5 = self._get_md5(email)

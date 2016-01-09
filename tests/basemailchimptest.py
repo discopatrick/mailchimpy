@@ -83,7 +83,10 @@ class BaseMailChimpTest(TestCase):
         # certain is not already subscribed to our list(s)
         return '{}@{}.com'.format(uuid4(), uuid4())
 
-    def _api_subscribe_email_to_list(self, email, list_id):
+    def _api_subscribe_email_to_list(self, list_id, email=None):
+
+        if email is None:
+            email = self._get_fresh_email()
 
         # subscribe an email address to the list (via direct API call)
         response = self.session.post(

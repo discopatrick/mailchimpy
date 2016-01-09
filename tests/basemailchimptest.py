@@ -1,5 +1,6 @@
 import os
 import warnings
+import hashlib
 from unittest import TestCase
 from uuid import uuid4
 import requests
@@ -69,6 +70,12 @@ class BaseMailChimpTest(TestCase):
 
     def _get_guid(self):
         return str(uuid4())
+
+    def _get_md5(self, string):
+
+        hashobject = hashlib.md5(string.encode())
+        md5 = hashobject.hexdigest()
+        return md5
 
     def _get_fresh_email(self):
 

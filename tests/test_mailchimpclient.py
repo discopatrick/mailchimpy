@@ -2,7 +2,6 @@ import unittest
 from unittest import TestCase
 from uuid import uuid4
 import requests
-import hashlib
 from betamax import Betamax
 
 from .basemailchimptest import BaseMailChimpClientTest
@@ -11,12 +10,6 @@ from . import config
 
 
 class MailChimpClientTest(BaseMailChimpClientTest):
-
-    def get_md5(self, string):
-
-        hashobject = hashlib.md5(string.encode())
-        md5 = hashobject.hexdigest()
-        return md5
 
     def test_check_subscription_status_returns_false_for_email_address_not_subscribed_to_list(self):
 
@@ -90,7 +83,7 @@ class MailChimpClientTest(BaseMailChimpClientTest):
             self._api_subscribe_email_to_list(email, self.list_id)
 
             # unsubscribe that email address (also via API directly)
-            email_md5 = self.get_md5(email)
+            email_md5 = self._get_md5(email)
             response = self.mc.session.patch(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
                     self.subdomain, self.list_id, email_md5),

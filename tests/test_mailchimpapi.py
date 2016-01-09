@@ -1,6 +1,5 @@
 import unittest
 from unittest import TestCase
-import hashlib
 import requests
 from uuid import uuid4
 from pprint import pformat
@@ -94,12 +93,6 @@ class ListsAPITest(BaseMailChimpAPITest):
 
 class MembersAPITest(BaseMailChimpAPITest):
 
-    def get_md5(self, string):
-
-        hashobject = hashlib.md5(string.encode())
-        md5 = hashobject.hexdigest()
-        return md5
-
     def test_api_returns_a_response(self):
 
         with self.recorder.use_cassette(self.id()):
@@ -113,7 +106,7 @@ class MembersAPITest(BaseMailChimpAPITest):
     def test_can_check_if_email_address_is_subscribed_to_list(self):
 
         email = self._get_fresh_email()
-        email_md5 = self.get_md5(email)
+        email_md5 = self._get_md5(email)
 
         with self.recorder.use_cassette(self.id()):
             response = self.session.get(
@@ -183,7 +176,7 @@ class MembersAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
             self._api_subscribe_email_to_list(email, self.list_id)
 
-        email_md5 = self.get_md5(email)
+        email_md5 = self._get_md5(email)
 
         # unsubscribe that same email address from the list
         with self.recorder.use_cassette(self.id()):
@@ -206,7 +199,7 @@ class MembersAPITest(BaseMailChimpAPITest):
             self._api_subscribe_email_to_list(email, self.list_id)
 
             # unsubscribe that same email address from the list
-            email_md5 = self.get_md5(email)
+            email_md5 = self._get_md5(email)
             response = self.session.patch(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/members/{}'.format(
                     self.subdomain, self.list_id, email_md5),
@@ -229,7 +222,7 @@ class MembersAPITest(BaseMailChimpAPITest):
     def test_unsubscribing_an_email_that_has_never_existed_in_the_list(self):
 
         email = self._get_fresh_email()
-        email_md5 = self.get_md5(email)
+        email_md5 = self._get_md5(email)
 
         with self.recorder.use_cassette(self.id()):
             response = self.session.patch(

@@ -16,7 +16,7 @@ from . import config
 # response of the request we just sent. As such, we are only testing those
 # values of which we can be sure of the responses, e.g.:
 # 
-# self.assertEqual(new_list['response'].status_code, 200)
+# self.assertEqual(new_list['status_code'], 200)
 # self.assertIsNotNone(new_list['response'].json().get('id'))
 # 
 # Some assertions are left commented below, rather than removed, in case we
@@ -41,10 +41,10 @@ class ListsAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette(self.id()):
             new_list = self._api_create_new_list()
 
-        self.assertEqual(new_list['response'].status_code, 200)
-        self.assertIsNotNone(new_list['response'].json().get('id'))
+        self.assertEqual(new_list['status_code'], 200)
+        self.assertIsNotNone(new_list['id'])
         # self.assertEqual(response.json().get('name'), list_name)
-        self.assertIsNotNone(new_list['response'].json().get('name'))
+        self.assertIsNotNone(new_list['name'])
 
     def test_getting_a_specific_list(self):
 
@@ -77,7 +77,7 @@ class ListsAPITest(BaseMailChimpAPITest):
             result = self._api_delete_list(new_list['id'])
 
         self.assertEqual(result['response'].content, b'')
-        self.assertEqual(result['response'].status_code, 204)
+        self.assertEqual(result['status_code'], 204)
 
 
 class MembersAPITest(BaseMailChimpAPITest):
@@ -122,7 +122,7 @@ class MembersAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette(self.id()):
             new_subscription = self._api_subscribe_email_to_list(email, new_list['id'])
 
-        self.assertEqual(new_subscription['response'].status_code, 200)
+        self.assertEqual(new_subscription['status_code'], 200)
         self.assertEqual(new_subscription['status'], 'subscribed')
 
         with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
@@ -141,7 +141,7 @@ class MembersAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette(self.id()):
             resubscription_attempt = self._api_subscribe_email_to_list(email, new_list['id'])
 
-        self.assertEqual(resubscription_attempt['response'].status_code, 400)
+        self.assertEqual(resubscription_attempt['status_code'], 400)
         self.assertEqual(resubscription_attempt['title'], 'Member Exists')
 
         with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
@@ -157,7 +157,7 @@ class MembersAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette(self.id()):
             subscription = self._api_subscribe_email_to_list(known_disallowed_email, new_list['id'])
 
-        self.assertEqual(subscription['response'].status_code, 400)
+        self.assertEqual(subscription['status_code'], 400)
         self.assertEqual(subscription['title'], 'Invalid Resource')
 
         with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
@@ -250,8 +250,8 @@ class InterestCategoriesAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette(self.id()):
             new_category = self._api_create_interest_category(self.list_id)
 
-        self.assertEqual(new_category['response'].status_code, 200)
-        self.assertIsNotNone(new_category['response'].json().get('id'))
+        self.assertEqual(new_category['status_code'], 200)
+        self.assertIsNotNone(new_category['id'])
 
     def test_create_interest_category_of_each_type_in_list(self):
 
@@ -259,8 +259,8 @@ class InterestCategoriesAPITest(BaseMailChimpAPITest):
             with self.recorder.use_cassette('{}_{}'.format(self.id(), category_type)):
                 new_category = self._api_create_interest_category(self.list_id, category_type)
 
-                self.assertEqual(new_category['response'].status_code, 200)
-                self.assertEqual(new_category['response'].json().get('type'), category_type)
+                self.assertEqual(new_category['status_code'], 200)
+                self.assertEqual(new_category['type'], category_type)
 
     def test_get_specific_interest_category(self):
 
@@ -299,7 +299,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette(self.id()):
             interests = self._api_get_interests(new_list['id'], new_category['id'])
 
-        self.assertEqual(interests['response'].status_code, 200)
+        self.assertEqual(interests['status_code'], 200)
         self.assertEqual(interests['interests'], [])
         self.assertEqual(interests['total_items'], 0)
 
@@ -317,7 +317,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette(self.id()):
             new_interest = self._api_create_interest(new_list['id'], new_category['id'])
 
-        self.assertEqual(new_interest['response'].status_code, 200)
+        self.assertEqual(new_interest['status_code'], 200)
         # self.assertEqual(response.json().get('name'), interest_name)
         self.assertIsNotNone(new_interest['response'].json().get('name'))
 
@@ -371,7 +371,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
         with self.recorder.use_cassette(self.id()):
             interests = self._api_get_interests(new_list['id'], new_category['id'])
 
-        self.assertEqual(interests['response'].status_code, 200)
+        self.assertEqual(interests['status_code'], 200)
         self.assertEqual(interests['total_items'], 2)
         self.assertEqual(len(interests['interests']), 2)
         # self.assertEqual(response.json().get('interests')[0].get('name'), interest_one_name)

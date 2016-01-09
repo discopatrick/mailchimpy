@@ -96,6 +96,7 @@ class BaseMailChimpTest(TestCase):
         return {
             'status': response.json().get('status'),
             'title': response.json().get('title'),
+            'status_code': response.status_code,
             'response': response
         }        
 
@@ -132,6 +133,7 @@ class BaseMailChimpTest(TestCase):
         return {
             'id': response.json().get('id'),
             'name': response.json().get('name'),
+            'status_code': response.status_code,
             'response': response
         }
 
@@ -144,6 +146,7 @@ class BaseMailChimpTest(TestCase):
         )
 
         return {
+            'status_code': response.status_code,
             'response': response
         }
 
@@ -162,6 +165,8 @@ class BaseMailChimpTest(TestCase):
         return {
             'id': response.json().get('id'),
             'name': response.json().get('name'),
+            'type': response.json().get('type'),
+            'status_code': response.status_code,
             'response': response
         }
 
@@ -176,6 +181,7 @@ class BaseMailChimpTest(TestCase):
         return {
             'total_items': response.json().get('total_items'),
             'interests': response.json().get('interests'),
+            'status_code': response.status_code,
             'response': response
         }
 
@@ -197,6 +203,7 @@ class BaseMailChimpTest(TestCase):
         return {
             'id': response.json().get('id'),
             'name': response.json().get('name'),
+            'status_code': response.status_code,
             'response': response
         }
 

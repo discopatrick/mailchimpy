@@ -63,6 +63,16 @@ class BaseMailChimpTest(TestCase):
         # ResourceWarning: unclosed <ssl.SSLSocket
         warnings.simplefilter("ignore", ResourceWarning)
 
+    def setUp(self):
+
+        with self.recorder.use_cassette('{}_setup_test_list'.format(self.id())):
+            self.temp_list = self._api_create_new_list()
+
+    def tearDown(self):
+
+        with self.recorder.use_cassette('{}_teardown_test_list'.format(self.id())):
+            self._api_delete_list(self.temp_list['id'])
+
     def _get_guid(self):
         return str(uuid4())
 

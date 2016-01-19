@@ -23,7 +23,6 @@ class BaseMailChimpTest(TestCase):
         self.recorder = Betamax(self.session)
 
         self.api_key = config.MAILCHIMP_API_KEY
-        self.list_id = config.MAILCHIMP_LIST_ID
 
         # the subdomain to use in the api url
         # is always the last 3 characters of the api key
@@ -56,16 +55,12 @@ class BaseMailChimpTest(TestCase):
                 ).decode()
             )
             betamaxconfig.define_cassette_placeholder(
-                '<MAILCHIMP_LIST_ID>',
-                self.list_id
-            )
-            betamaxconfig.define_cassette_placeholder(
                 '<MAILCHIMP_SUBDOMAIN>',
                 self.subdomain
             )
 
-        # suppress these warnings (due to requests module): ResourceWarning:
-        # unclosed <ssl.SSLSocket
+        # suppress these warnings (due to requests module): 
+        # ResourceWarning: unclosed <ssl.SSLSocket
         warnings.simplefilter("ignore", ResourceWarning)
 
     def _get_guid(self):
@@ -194,7 +189,7 @@ class BaseMailChimpTest(TestCase):
 
         response = self.session.post(
             'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
-                self.subdomain, self.list_id),
+                self.subdomain, list_id),
             auth=('apikey', self.api_key),
             json={
                 'title': self._get_guid(),

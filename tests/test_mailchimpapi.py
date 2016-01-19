@@ -311,7 +311,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-            new_category = self._api_create_interest_category(self.list_id)
+            new_category = self._api_create_interest_category(new_list['id'])
 
         # get all the interests of the category (should be none)
         with self.recorder.use_cassette(self.id()):
@@ -330,7 +330,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-            new_category = self._api_create_interest_category(self.list_id)
+            new_category = self._api_create_interest_category(new_list['id'])
 
         with self.recorder.use_cassette(self.id()):
             new_interest = self._api_create_interest(new_list['id'], new_category['id'])
@@ -348,7 +348,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-            new_category = self._api_create_interest_category(self.list_id)
+            new_category = self._api_create_interest_category(new_list['id'])
 
         with self.recorder.use_cassette('{}_arrange_interest'.format(self.id())):
             new_interest = self._api_create_interest(new_list['id'], new_category['id'])
@@ -376,7 +376,7 @@ class InterestsAPITest(BaseMailChimpAPITest):
             new_list = self._api_create_new_list()
 
         with self.recorder.use_cassette('{}_arrange_category'.format(self.id())):
-            new_category = self._api_create_interest_category(self.list_id)
+            new_category = self._api_create_interest_category(new_list['id'])
 
         # create two interests in the category
         with self.recorder.use_cassette('{}_arrange_interest_one'.format(self.id())):

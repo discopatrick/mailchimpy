@@ -22,7 +22,6 @@ A python 3 client for the MailChimp API v3, while we're waiting for the official
 * `pip install -r requirements.txt`
 * Create a file inside `tests/` called `config.py` containing these values (see `config-example.py` for an example):
 	* MAILCHIMP_API_KEY (the API key of a MailChimp account you have created for test purposes - do not use a real account!)
-	* MAILCHIMP_LIST_ID (the id of a list you have created for test purposes - do not use a real list!)
 * `python3 -m unittest tests.test_mailchimpclient`
 
 In order to minimise the number of requests made to the MailChimp API, and to keep the tests focussed on testing our code rather than the API itself, mailchimpy uses [betamax](https://github.com/sigmavirus24/betamax) to record http interactions and then play them back.

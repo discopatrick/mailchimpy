@@ -53,6 +53,9 @@ class ListsAPITest(BaseMailChimpAPITest):
         # self.assertEqual(response.json().get('name'), list_name)
         self.assertIsNotNone(new_list['name'])
 
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
+
     def test_getting_a_specific_list(self):
 
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
@@ -72,8 +75,8 @@ class ListsAPITest(BaseMailChimpAPITest):
         # self.assertEqual(response.json().get('name'), new_list['name'])
         self.assertIsNotNone(response.json().get('name'))
 
-        # print(response.status_code)
-        # print(pformat(response.json()))
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
 
     def test_deleting_a_list(self):
 
@@ -165,87 +168,125 @@ class MembersAPITest(BaseMailChimpAPITest):
 
     def test_unsubscribing_an_email(self):
 
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            new_list = self._api_create_new_list()
+
         email = self._get_fresh_email()
 
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-            self._api_subscribe_email_to_list(self.list_id, email)
+            self._api_subscribe_email_to_list(new_list['id'], email)
 
         with self.recorder.use_cassette(self.id()):
-            unsubscription = self._api_unsubscribe_email_from_list(self.list_id, email)
+            unsubscription = self._api_unsubscribe_email_from_list(new_list['id'], email)
 
         self.assertEqual(unsubscription['status_code'], 200)
         self.assertEqual(unsubscription['status'], 'unsubscribed')
 
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
+
     def test_unsubscribing_an_email_that_is_already_unsubscribed(self):
+
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            new_list = self._api_create_new_list()
 
         email = self._get_fresh_email()
 
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
             # subscribe an email address to the list
-            self._api_subscribe_email_to_list(self.list_id, email)
+            self._api_subscribe_email_to_list(new_list['id'], email)
 
             # unsubscribe that same email address from the list
-            self._api_unsubscribe_email_from_list(self.list_id, email)
+            self._api_unsubscribe_email_from_list(new_list['id'], email)
 
         # attempt to unsubscribe again
         with self.recorder.use_cassette(self.id()):
-            unsub_attempt_two = self._api_unsubscribe_email_from_list(self.list_id, email)
+            unsub_attempt_two = self._api_unsubscribe_email_from_list(new_list['id'], email)
 
         self.assertEqual(unsub_attempt_two['status_code'], 200)
         self.assertEqual(unsub_attempt_two['status'], 'unsubscribed')
 
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
+
     def test_unsubscribing_an_email_that_has_never_existed_in_the_list(self):
+
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            new_list = self._api_create_new_list()
 
         email = self._get_fresh_email()
 
         with self.recorder.use_cassette(self.id()):
-            unsubscription = self._api_unsubscribe_email_from_list(self.list_id, email)
+            unsubscription = self._api_unsubscribe_email_from_list(new_list['id'], email)
 
         self.assertEqual(unsubscription['status_code'], 404)
         self.assertEqual(unsubscription['title'], 'Resource Not Found')
 
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
 
 class InterestCategoriesAPITest(BaseMailChimpAPITest):
 
     def test_get_all_interest_categories_of_list(self):
 
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            new_list = self._api_create_new_list()
+
         with self.recorder.use_cassette(self.id()):
             response = self.session.get(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories'.format(
-                    self.subdomain, self.list_id),
+                    self.subdomain, new_list['id']),
                 auth=('apikey', self.api_key),
             )
 
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(response.json().get('categories'))
 
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
+
     def test_create_interest_category_in_list(self):
 
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            new_list = self._api_create_new_list()
+
         with self.recorder.use_cassette(self.id()):
-            new_category = self._api_create_interest_category(self.list_id)
+            new_category = self._api_create_interest_category(new_list['id'])
 
         self.assertEqual(new_category['status_code'], 200)
         self.assertIsNotNone(new_category['id'])
 
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
+
     def test_create_interest_category_of_each_type_in_list(self):
+
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            new_list = self._api_create_new_list()
 
         for category_type in ('checkboxes', 'dropdown', 'radio', 'hidden'):
             with self.recorder.use_cassette('{}_{}'.format(self.id(), category_type)):
-                new_category = self._api_create_interest_category(self.list_id, category_type)
+                new_category = self._api_create_interest_category(new_list['id'], category_type)
 
                 self.assertEqual(new_category['status_code'], 200)
                 self.assertEqual(new_category['type'], category_type)
 
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
+
     def test_get_specific_interest_category(self):
 
+        with self.recorder.use_cassette('{}_arrange_list'.format(self.id())):
+            new_list = self._api_create_new_list()
+
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-            new_category = self._api_create_interest_category(self.list_id)
+            new_category = self._api_create_interest_category(new_list['id'])
 
         # retrieve that category
         with self.recorder.use_cassette(self.id()):
             response = self.session.get(
                 'https://{}.api.mailchimp.com/3.0/lists/{}/interest-categories/{}'.format(
-                    self.subdomain, self.list_id, new_category['id']),
+                    self.subdomain, new_list['id'], new_category['id']),
                 auth=('apikey', self.api_key)
             )
 
@@ -253,6 +294,9 @@ class InterestCategoriesAPITest(BaseMailChimpAPITest):
         # self.assertEqual(response.json().get('title'), category_name)
         self.assertIsNotNone(response.json().get('title'))
 
+        with self.recorder.use_cassette('{}_cleanup'.format(self.id())):
+            self._api_delete_list(new_list['id'])
+            
 
 class InterestsAPITest(BaseMailChimpAPITest):
     """

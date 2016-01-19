@@ -17,26 +17,26 @@ class BaseMailChimpTest(TestCase):
     cassette_dir = 'cassettes'
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
 
-        self.session = requests.Session()
-        self.recorder = Betamax(self.session)
+        cls.session = requests.Session()
+        cls.recorder = Betamax(cls.session)
 
-        self.api_key = config.MAILCHIMP_API_KEY
+        cls.api_key = config.MAILCHIMP_API_KEY
 
         # the subdomain to use in the api url
         # is always the last 3 characters of the api key
-        self.subdomain = self.api_key[-3:]
+        cls.subdomain = cls.api_key[-3:]
 
         # define the string that will be passed in the MailChimp request
         # 'Authorization' header
         MAILCHIMP_REQUEST_AUTH_HEADER_NAME = 'apikey'
         MAILCHIMP_REQUEST_AUTH_HEADER = '{}:{}'.format(
-            MAILCHIMP_REQUEST_AUTH_HEADER_NAME, self.api_key)
+            MAILCHIMP_REQUEST_AUTH_HEADER_NAME, cls.api_key)
 
         # create the directory to store betamax cassettes
         abs_cassette_dir = os.path.join(os.path.dirname(
-            os.path.abspath(__file__)), self.cassette_dir)
+            os.path.abspath(__file__)), cls.cassette_dir)
         os.makedirs(abs_cassette_dir, exist_ok=True)
 
         Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
@@ -56,7 +56,7 @@ class BaseMailChimpTest(TestCase):
             )
             betamaxconfig.define_cassette_placeholder(
                 '<MAILCHIMP_SUBDOMAIN>',
-                self.subdomain
+                cls.subdomain
             )
 
         # suppress these warnings (due to requests module): 

@@ -97,7 +97,7 @@ class MembersAPITest(BaseMailChimpAPITest):
     def test_can_subscribe_a_new_email_to_list(self):
 
         with self.recorder.use_cassette(self.id()):
-            new_subscription = self._api_subscribe_email_to_list(self.temp_list['id'])
+            new_subscription = self._api_subscribe_email_to_list()
 
         self.assertEqual(new_subscription['status_code'], 200)
         self.assertEqual(new_subscription['status'], 'subscribed')
@@ -107,10 +107,10 @@ class MembersAPITest(BaseMailChimpAPITest):
         email = self._get_fresh_email()
 
         with self.recorder.use_cassette('{}_arrange_subscription'.format(self.id())):
-            self._api_subscribe_email_to_list(self.temp_list['id'], email)
+            self._api_subscribe_email_to_list(email=email)
 
         with self.recorder.use_cassette(self.id()):
-            resubscription_attempt = self._api_subscribe_email_to_list(self.temp_list['id'], email)
+            resubscription_attempt = self._api_subscribe_email_to_list(email=email)
 
         self.assertEqual(resubscription_attempt['status_code'], 400)
         self.assertEqual(resubscription_attempt['title'], 'Member Exists')
@@ -120,7 +120,7 @@ class MembersAPITest(BaseMailChimpAPITest):
         known_disallowed_email = 'anything@example.com'
 
         with self.recorder.use_cassette(self.id()):
-            subscription = self._api_subscribe_email_to_list(self.temp_list['id'], known_disallowed_email)
+            subscription = self._api_subscribe_email_to_list(email=known_disallowed_email)
 
         self.assertEqual(subscription['status_code'], 400)
         self.assertEqual(subscription['title'], 'Invalid Resource')
@@ -130,10 +130,10 @@ class MembersAPITest(BaseMailChimpAPITest):
         email = self._get_fresh_email()
 
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
-            self._api_subscribe_email_to_list(self.temp_list['id'], email)
+            self._api_subscribe_email_to_list(email=email)
 
         with self.recorder.use_cassette(self.id()):
-            unsubscription = self._api_unsubscribe_email_from_list(self.temp_list['id'], email)
+            unsubscription = self._api_unsubscribe_email_from_list(email=email)
 
         self.assertEqual(unsubscription['status_code'], 200)
         self.assertEqual(unsubscription['status'], 'unsubscribed')
@@ -144,14 +144,14 @@ class MembersAPITest(BaseMailChimpAPITest):
 
         with self.recorder.use_cassette('{}_arrange'.format(self.id())):
             # subscribe an email address to the list
-            self._api_subscribe_email_to_list(self.temp_list['id'], email)
+            self._api_subscribe_email_to_list(email=email)
 
             # unsubscribe that same email address from the list
-            self._api_unsubscribe_email_from_list(self.temp_list['id'], email)
+            self._api_unsubscribe_email_from_list(email=email)
 
         # attempt to unsubscribe again
         with self.recorder.use_cassette(self.id()):
-            unsub_attempt_two = self._api_unsubscribe_email_from_list(self.temp_list['id'], email)
+            unsub_attempt_two = self._api_unsubscribe_email_from_list(email=email)
 
         self.assertEqual(unsub_attempt_two['status_code'], 200)
         self.assertEqual(unsub_attempt_two['status'], 'unsubscribed')
@@ -161,7 +161,7 @@ class MembersAPITest(BaseMailChimpAPITest):
         email = self._get_fresh_email()
 
         with self.recorder.use_cassette(self.id()):
-            unsubscription = self._api_unsubscribe_email_from_list(self.temp_list['id'], email)
+            unsubscription = self._api_unsubscribe_email_from_list(email=email)
 
         self.assertEqual(unsubscription['status_code'], 404)
         self.assertEqual(unsubscription['title'], 'Resource Not Found')

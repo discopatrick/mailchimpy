@@ -88,7 +88,10 @@ class BaseMailChimpTest(TestCase):
         # certain is not already subscribed to our list(s)
         return '{}@{}.com'.format(uuid4(), uuid4())
 
-    def _api_subscribe_email_to_list(self, list_id, email=None):
+    def _api_subscribe_email_to_list(self, list_id=None, email=None):
+
+        if list_id is None:
+            list_id = self.temp_list['id']
 
         if email is None:
             email = self._get_fresh_email()
@@ -108,8 +111,11 @@ class BaseMailChimpTest(TestCase):
             'response': response
         }
 
-    def _api_unsubscribe_email_from_list(self, list_id, email):
+    def _api_unsubscribe_email_from_list(self, email, list_id=None):
 
+        if list_id is None:
+            list_id = self.temp_list['id']
+            
         email_md5 = self._get_md5(email)
 
         response = self.session.patch(

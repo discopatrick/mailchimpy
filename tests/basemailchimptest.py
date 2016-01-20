@@ -115,7 +115,7 @@ class BaseMailChimpTest(TestCase):
 
         if list_id is None:
             list_id = self.temp_list['id']
-            
+
         email_md5 = self._get_md5(email)
 
         response = self.session.patch(
@@ -132,7 +132,10 @@ class BaseMailChimpTest(TestCase):
             'response': response
         }
 
-    def _api_get_member(self, list_id, email=None):
+    def _api_get_member(self, email=None, list_id=None):
+
+        if list_id is None:
+            list_id = self.temp_list['id']
 
         if email is None:
             email = self._get_fresh_email()

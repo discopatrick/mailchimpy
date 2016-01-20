@@ -43,11 +43,16 @@ class MailChimpClient(object):
         )
 
         if response.status_code == 404:
-            subscribed = False
-        elif response.status_code == 200:
-            subscribed = True
-        else:
             subscribed = None
+        elif response.status_code == 200:
+            if response.json().get('status') == 'subscribed':
+                subscribed = True
+            elif response.json().get('status') == 'unsubscribed':
+                subscribed = False
+            else:
+                raise Exception('Unexpected API response')
+        else:
+            raise Exception('Unexpected API response')
 
         return subscribed
 

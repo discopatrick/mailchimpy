@@ -87,12 +87,43 @@ class MembersAPITest(BaseMailChimpAPITest):
 
         self.assertEqual(response.status_code, 200)
 
-    def test_can_check_if_email_address_is_subscribed_to_list(self):
+    def test_getting_member_that_is_not_yet_on_list(self):
 
         with self.recorder.use_cassette(self.id()):
-            member = self._api_get_member(self.temp_list['id'])
+            member = self._api_get_member()
 
         self.assertEqual(member['status_code'], 404)
+
+    def test_getting_member_that_is_already_on_list(self):
+
+        email = self._get_fresh_email()
+
+        with self.recorder.use_cassette('{}_arrange_subscription'.format(self.id())):
+            self._api_subscribe_email_to_list(email=email)       
+
+        with self.recorder.use_cassette(self.id()):
+            member = self._api_get_member(email)
+
+        self.assertEqual(member['status_code'], 200)
+        self.assertEqual(member['status'], 'subscribed')
+
+    def test_getting_member_that_is_on_list_but_unsubscribed(self):
+
+        email = self._get_fresh_email()
+
+        with self.recorder.use_cassette('{}_arrange_subscription'.format(self.id())):
+            self._api_subscribe_email_to_list(email=email)   
+            
+        with self.recorder.use_cassette('{}_arrange_unsubscription'.format(self.id())):
+            unsubscription = self._api_unsubscribe_email_from_list(email=email)
+
+        with self.recorder.use_cassette(self.id()):
+            member = self._api_get_member(email)
+
+        # print(pformat(member['response'].json()))
+        
+        self.assertEqual(member['status_code'], 200)
+        self.assertEqual(member['status'], 'unsubscribed')
 
     def test_can_subscribe_a_new_email_to_list(self):
 

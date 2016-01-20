@@ -31,15 +31,14 @@ class BaseMailChimpClientTest(BaseMailChimpTest):
 
 class MailChimpClientTest(BaseMailChimpClientTest):
 
-    def test_check_subscription_status_returns_false_for_email_address_not_subscribed_to_list(self):
+    def test_check_subscription_status_returns_none_for_email_address_that_never_existed_on_list(self):
 
         email = self._get_fresh_email()
 
         with self.recorder.use_cassette(self.id()):
             subscribed = self.mc.check_subscription_status(email, self.temp_list['id'])
 
-        self.assertIsNotNone(subscribed)
-        self.assertFalse(subscribed)
+        self.assertIsNone(subscribed)
 
     def test_check_subscription_status_returns_true_for_email_address_already_subscribed_to_list(self):
 
@@ -55,6 +54,25 @@ class MailChimpClientTest(BaseMailChimpClientTest):
 
         self.assertIsNotNone(subscribed)
         self.assertTrue(subscribed)
+
+    def test_check_subscription_status_returns_false_for_email_once_subscribed_but_now_unsubscribed(self):
+
+        email = self._get_fresh_email()
+
+        with self.recorder.use_cassette('{}_arrange_subscription'.format(self.id())):
+            # subscribe an email address to the list (via API directly)
+            self._api_subscribe_email_to_list(self.temp_list['id'], email)
+
+        with self.recorder.use_cassette('{}_arrange_unsubscription'.format(self.id())):
+            # unsubscribe same email address from the list (via API directly)
+            self._api_unsubscribe_email_from_list(email, self.temp_list['id'])
+
+        with self.recorder.use_cassette(self.id()):
+            # check that email's subscription status (via the client)
+            subscribed = self.mc.check_subscription_status(email, self.temp_list['id'])
+
+        self.assertIsNotNone(subscribed)
+        self.assertFalse(subscribed)                
 
     def test_subscribe_email_to_list_returns_true_on_success(self):
 

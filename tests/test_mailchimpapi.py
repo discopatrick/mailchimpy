@@ -96,8 +96,6 @@ class MembersAPITest(BaseMailChimpAPITest):
 
     def test_can_subscribe_a_new_email_to_list(self):
 
-        email = self._get_fresh_email()
-
         with self.recorder.use_cassette(self.id()):
             new_subscription = self._api_subscribe_email_to_list(self.temp_list['id'])
 

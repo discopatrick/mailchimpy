@@ -3,3 +3,5 @@ virtualenv
 config.py
 tests/cassettes
 node_modules
+docs/_build
+Makefile

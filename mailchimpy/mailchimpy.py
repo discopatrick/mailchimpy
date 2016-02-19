@@ -34,7 +34,12 @@ class MailChimpClient(object):
         return response
 
     def check_subscription_status(self, email, list_id):
-        """Checks the subscription status of the given email in the given list"""
+        """Checks the subscription status of the given email in the given list
+
+        Args:
+            email (str): The email address to check.
+            list_id (str): The id of the list to check against.
+        """
 
         email_md5 = self._get_md5(email)
 

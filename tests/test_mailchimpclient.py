@@ -36,9 +36,10 @@ class MailChimpClientTest(BaseMailChimpClientTest):
         email = self._get_fresh_email()
 
         with self.recorder.use_cassette(self.id()):
-            subscribed = self.mc.check_subscription_status(email, self.temp_list['id'])
+            (exists, subscribed) = self.mc.check_subscription_status(email, self.temp_list['id'])
 
         self.assertIsNone(subscribed)
+        self.assertFalse(exists)
 
     def test_check_subscription_status_returns_true_for_email_address_already_subscribed_to_list(self):
 
@@ -50,10 +51,11 @@ class MailChimpClientTest(BaseMailChimpClientTest):
 
         with self.recorder.use_cassette(self.id()):
             # check that email's subscription status (via the client)
-            subscribed = self.mc.check_subscription_status(email, self.temp_list['id'])
+            (exists, subscribed) = self.mc.check_subscription_status(email, self.temp_list['id'])
 
         self.assertIsNotNone(subscribed)
         self.assertTrue(subscribed)
+        self.assertTrue(exists)
 
     def test_check_subscription_status_returns_false_for_email_once_subscribed_but_now_unsubscribed(self):
 
@@ -69,10 +71,11 @@ class MailChimpClientTest(BaseMailChimpClientTest):
 
         with self.recorder.use_cassette(self.id()):
             # check that email's subscription status (via the client)
-            subscribed = self.mc.check_subscription_status(email, self.temp_list['id'])
+            (exists, subscribed) = self.mc.check_subscription_status(email, self.temp_list['id'])
 
         self.assertIsNotNone(subscribed)
-        self.assertFalse(subscribed)                
+        self.assertFalse(subscribed)
+        self.assertTrue(exists)
 
     def test_subscribe_email_to_list_returns_true_on_success(self):
 

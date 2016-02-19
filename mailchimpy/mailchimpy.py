@@ -6,6 +6,12 @@ from pprint import pformat
 
 class MailChimpClient(object):
 
+    class MEMBER_STATUS():
+        SUBSCRIBED = 'subscribed'
+        UNSUBSCRIBED = 'unsubscribed'
+        CLEANED = 'cleaned'
+        PENDING = 'pending'
+
     def __init__(self, api_key):
 
         self.api_key = api_key
@@ -43,18 +49,24 @@ class MailChimpClient(object):
         )
 
         if response.status_code == 404:
+            exists = False
             subscribed = None
         elif response.status_code == 200:
-            if response.json().get('status') == 'subscribed':
+            exists = True
+            if response.json().get('status') == self.MEMBER_STATUS.SUBSCRIBED:
                 subscribed = True
-            elif response.json().get('status') == 'unsubscribed':
+            elif response.json().get('status') in (
+                self.MEMBER_STATUS.UNSUBSCRIBED,
+                self.MEMBER_STATUS.CLEANED,
+                self.MEMBER_STATUS.PENDING
+            ):
                 subscribed = False
             else:
-                raise Exception('Unexpected API response')
+                raise Exception('Unexpected API response: member status')
         else:
-            raise Exception('Unexpected API response')
+            raise Exception('Unexpected API response: http status code')
 
-        return subscribed
+        return (exists, subscribed)
 
     def subscribe_email_to_list(self, email, list_id):
 

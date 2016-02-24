@@ -11,7 +11,7 @@ A python 3 client for the MailChimp API v3, while we're waiting for the official
     
     mc = MailChimpClient(YOUR_API_KEY)
     
-    subscribed = mc.check_subscription_status('someone@example.com', YOUR_LIST_ID)
+    (exists, subscribed) = mc.check_subscription_status('someone@example.com', YOUR_LIST_ID)
     
     if not subscribed:
         mc.subscribe_email_to_list('someone@example.com', YOUR_LIST_ID):

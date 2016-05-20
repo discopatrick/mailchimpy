@@ -18,7 +18,7 @@ class MailChimpClient(object):
 
         # the subdomain to use in the api url
         # is always the last 3 characters of the api key
-        self.subdomain = self.api_key[-3:]
+        self.subdomain = self.api_key.split('-')[-1]
 
         # set up a session for requests to be made in
         self.session = requests.Session()
